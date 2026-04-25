@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Reserva Sala</title>
+<link rel="icon" href="data:,">
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    display: flex;
+}
+
+.sidebar {
+    width: 200px;
+    background: #0b1e3c;
+    color: white;
+    padding: 20px;
+}
+
+.main {
+    flex: 1;
+    background: #f4f6fb;
+    padding: 20px;
+}
+
+.container {
+    display: flex;
+    gap: 20px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    flex: 1;
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar" style="text-align:center;">
+
+    <div style="margin-bottom:20px;">
+
+        <img src="logo_usm.png" 
+             style="width:150px; height:auto; display:block; margin:0 auto 15px;">
+
+        <img src="logo_electronica.png" 
+             style="width:120px; height:auto; display:block; margin:0 auto;">
+
+    </div>
+
+    <h2>ELO</h2>
+    <p>Calendario</p>
+
+</div>
+<div class="main">
+
+    <h1>Reserva Sala B355</h1>
+
+    <div class="container">
+
+        <div class="card">
+            <h3>Calendario</h3>
+
+            <div style="margin-bottom:10px;">
+                <button onclick="cambiarSemana(-1)">◀</button>
+                <span id="semanaTexto"></span>
+                <button onclick="cambiarSemana(1)">▶</button>
+            </div>
+
+            <div id="calendario" style="display:grid; grid-template-columns: 80px repeat(5, 1fr); gap:2px;"></div>
+        </div>
+
+        <div class="card">
+            <h3>Nueva / Editar Reserva</h3>
+            <input type="date" id="fecha"><br><br>
+            <input type="time" id="inicio"><br><br>
+            <input type="time" id="fin"><br><br>
+            <br><br>
+            <input type="email" id="email" placeholder="correo@usm.cl">
+            <br><br>
+            <input type="text" id="responsable" placeholder="Nombre responsable">
+
+            <br><br>
+            <input type="text" id="grupo" placeholder="Grupo / Asignatura">
+            <button onclick="reservar()">Guardar</button>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+let semanaOffset = 0;
+let reservaSeleccionada = null;
+
+function cambiarSemana(dir){
+    semanaOffset += dir;
+    cargarReservas();
+}
+
+function reservar(){
+
+    const data = {
+        fecha: document.getElementById("fecha").value,
+        hora_inicio: document.getElementById("inicio").value,
+        hora_fin: document.getElementById("fin").value,
+        responsable: document.getElementById("responsable").value,
+        grupo: document.getElementById("grupo").value,
+        email: document.getElementById("email").value
+    };
+
+    // 🔥 VALIDACIONES AQUÍ (ANTES DE FETCH)
+
+    if(!data.email.endsWith("@usm.cl")){
+        alert("Debe usar correo @usm.cl");
+        return;
+    }
+
+    if(!data.responsable || !data.grupo){
+        alert("Debe completar responsable y grupo");
+        return;
+    }
+
+    // 🔽 RECIÉN AQUÍ VIENEN LOS FETCH
+
+    if(reservaSeleccionada !== null){
+
+        fetch(`http://127.0.0.1:8000/reservas/${reservaSeleccionada}`,{
+            method:"PUT",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify(data)
+        })
+        .then(()=>{
+            reservaSeleccionada = null;
+            cargarReservas();
+        });
+
+    }else{
+
+        fetch("http://127.0.0.1:8000/reservas",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify(data)
+        })
+        .then(()=>cargarReservas());
+    }
+}
+
+function cargarReservas(){
+
+    fetch("http://127.0.0.1:8000/reservas")
+    .then(res=>res.json())
+    .then(data=>{
+
+        let inicioSemana = new Date();
+        inicioSemana.setHours(0,0,0,0);
+
+        let diaActual = inicioSemana.getDay() === 0 ? 6 : inicioSemana.getDay() - 1;
+        inicioSemana.setDate(inicioSemana.getDate() - diaActual + (semanaOffset * 7));
+    
+        let finSemana = new Date(inicioSemana);
+        finSemana.setDate(finSemana.getDate()+4);
+
+        document.getElementById("semanaTexto").innerText =
+            inicioSemana.toISOString().split("T")[0]+" - "+
+            finSemana.toISOString().split("T")[0];
+
+        data = data.filter(r=>{
+            let partes = r.fecha.split("-");
+            let f = new Date(partes[0], partes[1]-1, partes[2]);
+            return f>=inicioSemana && f<=finSemana;
+        });
+
+        const contenedor = document.getElementById("calendario");
+        contenedor.innerHTML="";
+
+        const dias = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
+
+        contenedor.appendChild(document.createElement("div"));
+
+        dias.forEach((d,i)=>{
+            let f = new Date(inicioSemana);
+            f.setDate(f.getDate()+i);
+
+            let div=document.createElement("div");
+            div.innerText = `${d} ${f.getDate()}/${f.getMonth()+1}`;
+            div.style.textAlign="center";
+            div.style.fontWeight="bold";
+            div.style.background="#e9ecef";
+            contenedor.appendChild(div);
+        });
+
+        for(let h=8;h<=18;h++){
+
+            let hora=document.createElement("div");
+            hora.innerText=`${h}:00`;
+            contenedor.appendChild(hora);
+
+            dias.forEach((d,i)=>{
+
+                let celda=document.createElement("div");
+                celda.style.height="40px";
+                celda.style.border="1px solid #ddd";
+                celda.style.position="relative";
+
+                celda.addEventListener("click", () => {
+
+                    let ocupado = data.some(r=>{
+                        let ini=parseInt(r.hora_inicio.slice(0,2));
+                        let fin=parseInt(r.hora_fin.slice(0,2));
+
+                        let partes = r.fecha.split("-");
+                        let f = new Date(partes[0], partes[1]-1, partes[2]);
+                        let dia = (f.getDay() + 6) % 7;
+
+                        return dia===i && h>=ini && h<fin;
+                    });
+
+                    if(ocupado){
+                        alert("Horario ocupado");
+                        return;
+                    }
+
+                    // resto del código igual
+
+                    // usar copia exacta de inicioSemana
+                    let fecha = new Date(inicioSemana.getTime());
+
+                    // sumar el día correcto
+                    fecha.setDate(fecha.getDate() + i);
+
+                    // formateo LOCAL (sin ISO)
+                    let yyyy = fecha.getFullYear();
+                    let mm = String(fecha.getMonth() + 1).padStart(2, '0');
+                    let dd = String(fecha.getDate()).padStart(2, '0');
+
+                    let fechaStr = `${yyyy}-${mm}-${dd}`;
+
+                    document.getElementById("fecha").value = fechaStr;
+                    document.getElementById("inicio").value = `${String(h).padStart(2, "0")}:00`;
+                    document.getElementById("fin").value = `${String(h+2).padStart(2, "0")}:00`;
+                });
+
+                data.forEach(r=>{
+
+                    let ini=parseInt(r.hora_inicio.slice(0,2));
+                    let partes = r.fecha.split("-");
+                    let f = new Date(partes[0], partes[1]-1, partes[2]);
+                    let dia = (f.getDay() + 6) % 7;
+
+                    if(dia===i && ini===h){
+                        celda.style.background = "#dee2e6"; // gris
+                        celda.style.cursor = "not-allowed";
+
+                        let bloque=document.createElement("div");
+
+                        let fin=parseInt(r.hora_fin);
+                        let duracion=fin-ini;
+
+                        bloque.style.position="absolute";
+                        bloque.style.top="0";
+                        bloque.style.left="0";
+                        bloque.style.right="0";
+                        bloque.style.height=`${duracion*40}px`;
+                        bloque.style.background="#4dabf7";
+                        bloque.style.color="white";
+                        bloque.style.padding="4px";
+                        bloque.style.borderRadius="6px";
+
+                        bloque.innerHTML=`<b>${r.grupo}</b><br>${r.hora_inicio}-${r.hora_fin}`;
+
+                        bloque.title=`Grupo: ${r.grupo}`;
+
+                        // EDITAR
+                        bloque.addEventListener("click",(e)=>{
+                            e.stopPropagation();
+                            reservaSeleccionada = r.id;
+                            document.getElementById("fecha").value = r.fecha;
+                            document.getElementById("inicio").value = r.hora_inicio;
+                            document.getElementById("fin").value = r.hora_fin;
+                        });
+
+                        // ELIMINAR
+                        bloque.addEventListener("dblclick",(e)=>{
+                            e.stopPropagation();
+
+                            let emailActual = document.getElementById("email").value;
+
+                            if(emailActual !== r.email && emailActual !== "admin@usm.cl"){
+                                alert("Solo puedes eliminar tus propias reservas");
+                                return;
+                            }
+
+                            if(confirm("Eliminar reserva?")){
+                                fetch(`http://127.0.0.1:8000/reservas/${r.id}`,{
+                                    method:"DELETE"
+                                }).then(()=>cargarReservas());
+                            }
+                        });
+
+                        celda.appendChild(bloque);
+                    }
+                });
+
+                contenedor.appendChild(celda);
+            });
+        }
+    });
+}
+
+document.addEventListener("DOMContentLoaded", cargarReservas);
+
+</script>
+
+</body>
+</html>
