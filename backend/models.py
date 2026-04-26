@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Date, Time
-from database import Base
+from backend.database import Base
 
 class Reserva(Base):
     __tablename__ = "reservas"
