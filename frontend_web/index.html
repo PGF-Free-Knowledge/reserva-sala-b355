@@ -225,12 +225,15 @@ function cargarReservas(){
                     if(r.fecha === fechaStr && ini === h){
 
                         let bloque = document.createElement("div");
+                        bloque.style.fontSize = "20px";// provisorio
+                        bloque.style.background = "red";//provisorio
                         bloque.style.position = "relative";
                         //bloque.style.position = "absolute";
                         //bloque.style.top = "0";
                         //bloque.style.left = "0";
+                        bloque.style.margin = "2px 0";   // 👈 AQUÍ
                         bloque.style.right = "0";
-                        bloque.style.height = `${(fin-ini)*40}px`;
+                        blSSoque.style.height = `${(fin-ini)*40}px`;
                         bloque.style.background = "#4dabf7";
                         bloque.style.color = "white";
                         bloque.style.padding = "4px";
