@@ -90,15 +90,15 @@ def crear_reserva(data: ReservaInput, db: Session = Depends(get_db)):
 
         return {"mensaje": "Reserva guardada correctamente"}
 
+    except HTTPException as e:
+        # Deja pasar los errores de validación tal cual
+        print("Error en crear_reserva:", e.detail)
+        raise e
     except Exception as e:
-        print("Error en crear_reserva:", str(e))
+        # Solo captura errores inesperados
+        print("Error inesperado en crear_reserva:", str(e))
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
 
-# Listar reservas
-@app.get("/reservas")
-def listar_reservas(db: Session = Depends(get_db)):
-    reservas = db.query(Reserva).all()
-    return reservas
 
 # Eliminar reserva
 @app.delete("/reservas/{reserva_id}")
