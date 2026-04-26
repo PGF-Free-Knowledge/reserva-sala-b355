@@ -54,7 +54,7 @@ app.layout = html.Div([
 )
 def listar_reservas(n):
     try:
-        reservas = requests.get("http://127.0.0.1:8000/reservas").json()
+        reservas = requests.get("https://reserva-sala-b355-electronica.onrender.com/reservas").json()
         return [
             html.Div(
                 f"{r['fecha']} {r['hora_inicio']} {r['hora_fin']} {r['grupo']} {r['responsable']}"
@@ -90,7 +90,7 @@ def crear_reserva(n, fecha, inicio, fin, responsable, grupo, email):
     }
 
     try:
-        r = requests.post("http://127.0.0.1:8000/reservas", json=data)
+        r = requests.post("https://reserva-sala-b355-electronica.onrender.com/reservas", json=data)
         return r.json().get("mensaje", "Reserva realizada")
     except:
         return "Error al conectar con backend"
@@ -109,7 +109,7 @@ def crear_reserva(n, fecha, inicio, fin, responsable, grupo, email):
     prevent_initial_call=True
 )
 def actualizar_horas(_, hora_inicio_seleccionada, fecha, hora_fin_actual):
-    reservas = requests.get("http://127.0.0.1:8000/reservas").json()
+    reservas = requests.get("https://reserva-sala-b355-electronica.onrender.com/reservas").json()
 
     reservas_del_dia = [r for r in reservas if r["fecha"] == fecha]
 
@@ -150,7 +150,7 @@ def actualizar_horas(_, hora_inicio_seleccionada, fecha, hora_fin_actual):
 )
 def mostrar_horario(_, fecha):
     try:
-        reservas = requests.get("http://127.0.0.1:8000/reservas").json()
+        reservas = requests.get("https://reserva-sala-b355-electronica.onrender.com/reservas").json()
 
         reservas_del_dia = [r for r in reservas if r["fecha"] == fecha]
 
@@ -183,7 +183,7 @@ def mostrar_horario(_, fecha):
 )
 def mostrar_horario_visual(_, fecha, inicio_sel, fin_sel):
     try:
-        reservas = requests.get("http://127.0.0.1:8000/reservas").json()
+        reservas = requests.get("https://reserva-sala-b355-electronica.onrender.com/reservas").json()
 
         reservas_del_dia = [r for r in reservas if r["fecha"] == fecha]
 
@@ -250,7 +250,7 @@ def seleccionar_rango(timestamps, ids, rango_temp, fecha):
     if not timestamps:
         return dash.no_update, dash.no_update, rango_temp, ""
 
-    reservas = requests.get("http://127.0.0.1:8000/reservas").json()
+    reservas = requests.get("https://reserva-sala-b355-electronica.onrender.com/reservas").json()
     reservas_del_dia = [r for r in reservas if r["fecha"] == fecha]
 
     ocupadas = set()
@@ -303,7 +303,7 @@ def seleccionar_rango(timestamps, ids, rango_temp, fecha):
 )
 def mostrar_calendario(_, fecha_seleccionada):
     try:
-        reservas = requests.get("http://127.0.0.1:8000/reservas").json()
+        reservas = requests.get("https://reserva-sala-b355-electronica.onrender.com/reservas").json()
 
         calendario = {}
 
