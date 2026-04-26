@@ -3,11 +3,11 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend.database import SessionLocal, engine, Base
 from backend.models import Reserva
-from datetime import date, time
+from datetime import date, time, datetime
 import uvicorn
 import os
 
-app = FastAPI()##Rev PGF
+app = FastAPI()  ##Rev PGF
 
 app.add_middleware(
     CORSMiddleware,
@@ -36,9 +36,23 @@ def inicio():
 # Crear reserva
 @app.post("/reservas")
 def crear_reserva(data: dict, db: Session = Depends(get_db)):
-    inicio = time.fromisoformat(data["hora_inicio"])
-    fin = time.fromisoformat(data["hora_fin"])
-    fecha = date.fromisoformat(data["fecha"])
+    print("Datos recibidos en crear_reserva:", data)
+
+    # Convertir fecha: aceptar DD/MM/YYYY y YYYY-MM-DD
+    try:
+        if "/" in data["fecha"]:
+            fecha = datetime.strptime(data["fecha"], "%d/%m/%Y").date()
+        else:
+            fecha = date.fromisoformat(data["fecha"])
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Formato de fecha inválido")
+
+    # Convertir horas
+    try:
+        inicio = time.fromisoformat(data["hora_inicio"])
+        fin = time.fromisoformat(data["hora_fin"])
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Formato de hora inválido")
 
     # Validar horario
     if inicio < time(8, 0) or fin > time(18, 0):
@@ -56,7 +70,6 @@ def crear_reserva(data: dict, db: Session = Depends(get_db)):
 
     # Validar conflicto de horario
     reservas = db.query(Reserva).filter(Reserva.fecha == fecha).all()
-
     for r in reservas:
         if not (fin <= r.hora_inicio or inicio >= r.hora_fin):
             raise HTTPException(status_code=400, detail="Horario no disponible")
