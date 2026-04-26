@@ -109,7 +109,7 @@ function reservar(){
 
     if(reservaSeleccionada){
 
-        fetch(`https://reserva-sala-b355-2.onrender.com/reservas/${reservaSeleccionada}`,{
+        fetch(`https://reserva-sala-b355-electronica.onrender.com/reservas/${reservaSeleccionada}`,{
             method:"PUT",
             headers:{"Content-Type":"application/json"},
             body: JSON.stringify(data)
@@ -120,7 +120,7 @@ function reservar(){
 
     } else {
 
-        fetch("https://reserva-sala-b355-2.onrender.com/reservas",{
+        fetch("https://reserva-sala-b355-electronica.onrender.com/reservas",{
             method:"POST",
             headers:{"Content-Type":"application/json"},
             body: JSON.stringify(data)
@@ -130,7 +130,7 @@ function reservar(){
 
 function cargarReservas(){
 
-    fetch("https://reserva-sala-b355-2.onrender.com/reservas")
+    fetch("https://reserva-sala-b355-electronica.onrender.com/reservas")
     .then(res=>res.json())
     .then(data=>{
 
