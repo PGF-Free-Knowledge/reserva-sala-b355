@@ -42,55 +42,47 @@ body {
 <body>
 
 <div class="sidebar" style="text-align:center;">
-
     <div style="margin-bottom:20px;">
-
-        <img src="logo_usm.png" 
-             style="width:150px; height:auto; display:block; margin:0 auto 15px;">
-
-        <img src="logo_electronica.png" 
-             style="width:120px; height:auto; display:block; margin:0 auto;">
-
+        <img src="logo_usm.png" style="width:150px; display:block; margin:0 auto 15px;">
+        <img src="logo_electronica.png" style="width:120px; display:block; margin:0 auto;">
     </div>
-
     <h2>ELO</h2>
     <p>Calendario</p>
-
 </div>
+
 <div class="main">
 
-    <h1>Reserva Sala B355</h1>
+<h1>Reserva Sala B355</h1>
 
-    <div class="container">
+<div class="container">
 
-        <div class="card">
-            <h3>Calendario</h3>
+<div class="card">
+<h3>Calendario</h3>
 
-            <div style="margin-bottom:10px;">
-                <button onclick="cambiarSemana(-1)">◀</button>
-                <span id="semanaTexto"></span>
-                <button onclick="cambiarSemana(1)">▶</button>
-            </div>
+<div style="margin-bottom:10px;">
+<button onclick="cambiarSemana(-1)">◀</button>
+<span id="semanaTexto"></span>
+<button onclick="cambiarSemana(1)">▶</button>
+</div>
 
-            <div id="calendario" style="display:grid; grid-template-columns: 80px repeat(5, 1fr); gap:2px;"></div>
-        </div>
+<div id="calendario" style="display:grid; grid-template-columns: 80px repeat(5, 1fr); gap:2px;"></div>
+</div>
 
-        <div class="card">
-            <h3>Nueva / Editar Reserva</h3>
-            <input type="date" id="fecha"><br><br>
-            <input type="time" id="inicio"><br><br>
-            <input type="time" id="fin"><br><br>
-            <br><br>
-            <input type="email" id="email" placeholder="correo@usm.cl">
-            <br><br>
-            <input type="text" id="responsable" placeholder="Nombre responsable">
+<div class="card">
+<h3>Nueva / Editar Reserva</h3>
 
-            <br><br>
-            <input type="text" id="grupo" placeholder="Grupo / Asignatura">
-            <button onclick="reservar()">Guardar</button>
-        </div>
+<input type="date" id="fecha"><br><br>
+<input type="time" id="inicio"><br><br>
+<input type="time" id="fin"><br><br>
 
-    </div>
+<input type="email" id="email" placeholder="correo@usm.cl"><br><br>
+<input type="text" id="responsable"><br><br>
+<input type="text" id="grupo"><br><br>
+
+<button onclick="reservar()">Guardar</button>
+</div>
+
+</div>
 
 </div>
 
@@ -115,46 +107,30 @@ function reservar(){
         email: document.getElementById("email").value
     };
 
-    // 🔥 VALIDACIONES AQUÍ (ANTES DE FETCH)
+    if(reservaSeleccionada){
 
-    if(!data.email.endsWith("@usm.cl")){
-        alert("Debe usar correo @usm.cl");
-        return;
-    }
-
-    if(!data.responsable || !data.grupo){
-        alert("Debe completar responsable y grupo");
-        return;
-    }
-
-    // 🔽 RECIÉN AQUÍ VIENEN LOS FETCH
-
-    if(reservaSeleccionada !== null){
-
-        fetch(`http://127.0.0.1:8000/reservas/${reservaSeleccionada}`,{
+        fetch(`https://reserva-sala-b355-2.onrender.com/reservas/${reservaSeleccionada}`,{
             method:"PUT",
             headers:{"Content-Type":"application/json"},
             body: JSON.stringify(data)
-        })
-        .then(()=>{
+        }).then(()=>{
             reservaSeleccionada = null;
             cargarReservas();
         });
 
-    }else{
+    } else {
 
-        fetch("http://127.0.0.1:8000/reservas",{
+        fetch("https://reserva-sala-b355-2.onrender.com/reservas",{
             method:"POST",
             headers:{"Content-Type":"application/json"},
             body: JSON.stringify(data)
-        })
-        .then(()=>cargarReservas());
+        }).then(()=>cargarReservas());
     }
 }
 
 function cargarReservas(){
 
-    fetch("http://127.0.0.1:8000/reservas")
+    fetch("https://reserva-sala-b355-2.onrender.com/reservas")
     .then(res=>res.json())
     .then(data=>{
 
@@ -163,22 +139,17 @@ function cargarReservas(){
 
         let diaActual = inicioSemana.getDay() === 0 ? 6 : inicioSemana.getDay() - 1;
         inicioSemana.setDate(inicioSemana.getDate() - diaActual + (semanaOffset * 7));
-    
+
         let finSemana = new Date(inicioSemana);
-        finSemana.setDate(finSemana.getDate()+4);
+        finSemana.setDate(finSemana.getDate() + 4);
 
         document.getElementById("semanaTexto").innerText =
-            inicioSemana.toISOString().split("T")[0]+" - "+
+            inicioSemana.toISOString().split("T")[0] +
+            " - " +
             finSemana.toISOString().split("T")[0];
 
-        data = data.filter(r=>{
-            let partes = r.fecha.split("-");
-            let f = new Date(partes[0], partes[1]-1, partes[2]);
-            return f>=inicioSemana && f<=finSemana;
-        });
-
         const contenedor = document.getElementById("calendario");
-        contenedor.innerHTML="";
+        contenedor.innerHTML = "";
 
         const dias = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
 
@@ -186,123 +157,71 @@ function cargarReservas(){
 
         dias.forEach((d,i)=>{
             let f = new Date(inicioSemana);
-            f.setDate(f.getDate()+i);
+            f.setDate(f.getDate() + i);
 
-            let div=document.createElement("div");
+            let div = document.createElement("div");
             div.innerText = `${d} ${f.getDate()}/${f.getMonth()+1}`;
-            div.style.textAlign="center";
-            div.style.fontWeight="bold";
-            div.style.background="#e9ecef";
+            div.style.textAlign = "center";
+            div.style.fontWeight = "bold";
+            div.style.background = "#e9ecef";
             contenedor.appendChild(div);
         });
 
-        for(let h=8;h<=18;h++){
+        for(let h = 8; h <= 18; h++){
 
-            let hora=document.createElement("div");
-            hora.innerText=`${h}:00`;
+            let hora = document.createElement("div");
+            hora.innerText = `${h}:00`;
             contenedor.appendChild(hora);
 
             dias.forEach((d,i)=>{
 
-                let celda=document.createElement("div");
-                celda.style.height="40px";
-                celda.style.border="1px solid #ddd";
-                celda.style.position="relative";
+                let celda = document.createElement("div");
+                celda.style.height = "40px";
+                celda.style.border = "1px solid #ddd";
+                celda.style.position = "relative";
 
-                celda.addEventListener("click", () => {
+                celda.addEventListener("click", ()=>{
 
-                    let ocupado = data.some(r=>{
-                        let ini=parseInt(r.hora_inicio.slice(0,2));
-                        let fin=parseInt(r.hora_fin.slice(0,2));
-
-                        let partes = r.fecha.split("-");
-                        let f = new Date(partes[0], partes[1]-1, partes[2]);
-                        let dia = (f.getDay() + 6) % 7;
-
-                        return dia===i && h>=ini && h<fin;
-                    });
-
-                    if(ocupado){
-                        alert("Horario ocupado");
-                        return;
-                    }
-
-                    // resto del código igual
-
-                    // usar copia exacta de inicioSemana
-                    let fecha = new Date(inicioSemana.getTime());
-
-                    // sumar el día correcto
+                    let fecha = new Date(inicioSemana);
                     fecha.setDate(fecha.getDate() + i);
 
-                    // formateo LOCAL (sin ISO)
                     let yyyy = fecha.getFullYear();
-                    let mm = String(fecha.getMonth() + 1).padStart(2, '0');
-                    let dd = String(fecha.getDate()).padStart(2, '0');
+                    let mm = String(fecha.getMonth()+1).padStart(2,'0');
+                    let dd = String(fecha.getDate()).padStart(2,'0');
 
-                    let fechaStr = `${yyyy}-${mm}-${dd}`;
-
-                    document.getElementById("fecha").value = fechaStr;
-                    document.getElementById("inicio").value = `${String(h).padStart(2, "0")}:00`;
-                    document.getElementById("fin").value = `${String(h+2).padStart(2, "0")}:00`;
+                    document.getElementById("fecha").value = `${yyyy}-${mm}-${dd}`;
+                    document.getElementById("inicio").value = `${String(h).padStart(2,"0")}:00`;
+                    document.getElementById("fin").value = `${String(h+2).padStart(2,"0")}:00`;
                 });
 
                 data.forEach(r=>{
 
-                    let ini=parseInt(r.hora_inicio.slice(0,2));
-                    let partes = r.fecha.split("-");
-                    let f = new Date(partes[0], partes[1]-1, partes[2]);
-                    let dia = (f.getDay() + 6) % 7;
+                    let ini = parseInt(r.hora_inicio.slice(0,2));
+                    let fin = parseInt(r.hora_fin.slice(0,2));
 
-                    if(dia===i && ini===h){
-                        celda.style.background = "#dee2e6"; // gris
-                        celda.style.cursor = "not-allowed";
+                    let fechaCelda = new Date(inicioSemana);
+                    fechaCelda.setDate(fechaCelda.getDate() + i);
 
-                        let bloque=document.createElement("div");
+                    let yyyy = fechaCelda.getFullYear();
+                    let mm = String(fechaCelda.getMonth()+1).padStart(2,'0');
+                    let dd = String(fechaCelda.getDate()).padStart(2,'0');
 
-                        let fin=parseInt(r.hora_fin);
-                        let duracion=fin-ini;
+                    let fechaStr = `${yyyy}-${mm}-${dd}`;
 
-                        bloque.style.position="absolute";
-                        bloque.style.top="0";
-                        bloque.style.left="0";
-                        bloque.style.right="0";
-                        bloque.style.height=`${duracion*40}px`;
-                        bloque.style.background="#4dabf7";
-                        bloque.style.color="white";
-                        bloque.style.padding="4px";
-                        bloque.style.borderRadius="6px";
+                    if(r.fecha === fechaStr && ini === h){
 
-                        bloque.innerHTML=`<b>${r.grupo}</b><br>${r.hora_inicio}-${r.hora_fin}`;
+                        let bloque = document.createElement("div");
+                        bloque.style.position = "absolute";
+                        bloque.style.top = "0";
+                        bloque.style.left = "0";
+                        bloque.style.right = "0";
+                        bloque.style.height = `${(fin-ini)*40}px`;
+                        bloque.style.background = "#4dabf7";
+                        bloque.style.color = "white";
+                        bloque.style.padding = "4px";
+                        bloque.style.borderRadius = "6px";
 
-                        bloque.title=`Grupo: ${r.grupo}`;
-
-                        // EDITAR
-                        bloque.addEventListener("click",(e)=>{
-                            e.stopPropagation();
-                            reservaSeleccionada = r.id;
-                            document.getElementById("fecha").value = r.fecha;
-                            document.getElementById("inicio").value = r.hora_inicio;
-                            document.getElementById("fin").value = r.hora_fin;
-                        });
-
-                        // ELIMINAR
-                        bloque.addEventListener("dblclick",(e)=>{
-                            e.stopPropagation();
-
-                            let emailActual = document.getElementById("email").value;
-
-                            if(emailActual !== r.email && emailActual !== "admin@usm.cl"){
-                                alert("Solo puedes eliminar tus propias reservas");
-                                return;
-                            }
-
-                            if(confirm("Eliminar reserva?")){
-                                fetch(`http://127.0.0.1:8000/reservas/${r.id}`,{
-                                    method:"DELETE"
-                                }).then(()=>cargarReservas());
-                            }
-                        });
+                        bloque.innerHTML = `<b>${r.grupo}</b><br>${r.hora_inicio}-${r.hora_fin}`;
 
                         celda.appendChild(bloque);
                     }

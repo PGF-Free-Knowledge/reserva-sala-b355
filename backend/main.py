@@ -1,7 +1,7 @@
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from database import SessionLocal, engine, Base
+from backend.database import SessionLocal, engine, Base
 from models import Reserva
 from datetime import date, time
 import uvicorn
