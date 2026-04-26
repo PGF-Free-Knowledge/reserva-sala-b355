@@ -225,9 +225,10 @@ function cargarReservas(){
                     if(r.fecha === fechaStr && ini === h){
 
                         let bloque = document.createElement("div");
-                        bloque.style.position = "absolute";
-                        bloque.style.top = "0";
-                        bloque.style.left = "0";
+                        bloque.style.position = "relative";
+                        //bloque.style.position = "absolute";
+                        //bloque.style.top = "0";
+                        //bloque.style.left = "0";
                         bloque.style.right = "0";
                         bloque.style.height = `${(fin-ini)*40}px`;
                         bloque.style.background = "#4dabf7";
