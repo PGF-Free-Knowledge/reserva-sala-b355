@@ -144,9 +144,14 @@ function reservar(){
 
 function cargarReservas(){
 
-    fetch("https://reserva-sala-b355-electronica.onrender.com/reservas")
-    .then(res=>res.json())
-    .then(data=>{
+    fetch("https://reserva-sala-b355-elo.onrender.com/reservas")
+    .then(res => {
+        if (!res.ok) {
+            throw new Error("Error al cargar reservas");
+        }
+        return res.json();
+    })
+    .then(data => {
 
         let inicioSemana = new Date();
         inicioSemana.setHours(0,0,0,0);
@@ -225,17 +230,11 @@ function cargarReservas(){
                     if(r.fecha === fechaStr && ini === h){
 
                         let bloque = document.createElement("div");
-                        bloque.style.fontSize = "20px";// provisorio
-                        bloque.style.background = "red";//provisorio
-                        bloque.style.position = "relative";
-                        //bloque.style.position = "absolute";
-                        //bloque.style.top = "0";
-                        //bloque.style.left = "0";
-                        bloque.style.margin = "2px 0";   // 👈 AQUÍ
-                        bloque.style.right = "0";
-                        //blSSoque.style.height = `${(fin-ini)*40}px`;
-                        bloque.style.height = `${(fin-ini)*40}px`;
+                        bloque.style.fontSize = "20px"; // provisorio
                         bloque.style.background = "#4dabf7";
+                        bloque.style.position = "relative";
+                        bloque.style.margin = "2px 0";
+                        bloque.style.height = `${(fin-ini)*40}px`;
                         bloque.style.color = "white";
                         bloque.style.padding = "4px";
                         bloque.style.borderRadius = "6px";
@@ -250,8 +249,13 @@ function cargarReservas(){
 
             });
         }
+    })
+    .catch(err => {
+        console.error("Error cargando reservas:", err);
+        alert("No se pudieron cargar las reservas");
     });
 }
+
 
 window.addEventListener("load", cargarReservas);
 
