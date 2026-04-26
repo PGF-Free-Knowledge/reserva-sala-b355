@@ -45,7 +45,8 @@ def crear_reserva(data: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Horario fuera de rango (08:00 - 18:00)")
 
     # Validar duración
-    duracion = fin.hour - inicio.hour
+    duracion = (fin.hour * 60 + fin.minute) - (inicio.hour * 60 + inicio.minute)
+    duracion = duracion / 60
     if duracion < 2 or duracion % 2 != 0 or duracion > 8:
         raise HTTPException(status_code=400, detail="Duración inválida: solo bloques de 2 a 8 horas")
 
