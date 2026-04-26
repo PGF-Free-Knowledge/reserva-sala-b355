@@ -1,4 +1,4 @@
-ffrom fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend.database import SessionLocal, engine, Base
