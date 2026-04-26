@@ -233,7 +233,8 @@ function cargarReservas(){
                         //bloque.style.left = "0";
                         bloque.style.margin = "2px 0";   // 👈 AQUÍ
                         bloque.style.right = "0";
-                        blSSoque.style.height = `${(fin-ini)*40}px`;
+                        //blSSoque.style.height = `${(fin-ini)*40}px`;
+                        bloque.style.height = `${(fin-ini)*40}px`;
                         bloque.style.background = "#4dabf7";
                         bloque.style.color = "white";
                         bloque.style.padding = "4px";
@@ -246,6 +247,7 @@ function cargarReservas(){
                 });
 
                 contenedor.appendChild(celda);
+                
             });
         }
     });
