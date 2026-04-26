@@ -1,9 +1,10 @@
-from fastapi.middleware.cors import CORSMiddleware
+ffrom fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend.database import SessionLocal, engine, Base
 from backend.models import Reserva
 from datetime import date, time, datetime
+from pydantic import BaseModel
 import uvicorn
 import os
 
@@ -28,6 +29,15 @@ def get_db():
     finally:
         db.close()
 
+# Modelo de entrada
+class ReservaInput(BaseModel):
+    fecha: str
+    hora_inicio: str
+    hora_fin: str
+    responsable: str
+    grupo: str
+    email: str
+
 # Endpoint raíz
 @app.get("/")
 def inicio():
@@ -35,19 +45,19 @@ def inicio():
 
 # Crear reserva
 @app.post("/reservas")
-def crear_reserva(data: dict, db: Session = Depends(get_db)):
+def crear_reserva(data: ReservaInput, db: Session = Depends(get_db)):
     try:
-        print("Datos recibidos en crear_reserva:", data)
+        print("Datos recibidos en crear_reserva:", data.dict())
 
         # Conversión de fecha
-        if "/" in data["fecha"]:
-            fecha = datetime.strptime(data["fecha"], "%d/%m/%Y").date()
+        if "/" in data.fecha:
+            fecha = datetime.strptime(data.fecha, "%d/%m/%Y").date()
         else:
-            fecha = date.fromisoformat(data["fecha"])
+            fecha = date.fromisoformat(data.fecha)
 
         # Conversión de horas
-        inicio = time.fromisoformat(data["hora_inicio"])
-        fin = time.fromisoformat(data["hora_fin"])
+        inicio = time.fromisoformat(data.hora_inicio)
+        fin = time.fromisoformat(data.hora_fin)
 
         # Validaciones
         if inicio < time(8, 0) or fin > time(18, 0):
@@ -58,7 +68,7 @@ def crear_reserva(data: dict, db: Session = Depends(get_db)):
         if duracion < 2 or duracion % 2 != 0 or duracion > 8:
             raise HTTPException(status_code=400, detail="Duración inválida: solo bloques de 2 a 8 horas")
 
-        if not data["email"].endswith("@usm.cl"):
+        if not data.email.endswith("@usm.cl"):
             raise HTTPException(status_code=400, detail="Correo debe ser @usm.cl")
 
         reservas = db.query(Reserva).filter(Reserva.fecha == fecha).all()
@@ -70,9 +80,9 @@ def crear_reserva(data: dict, db: Session = Depends(get_db)):
             fecha=fecha,
             hora_inicio=inicio,
             hora_fin=fin,
-            responsable=data["responsable"],
-            grupo=data["grupo"],
-            email=data["email"]
+            responsable=data.responsable,
+            grupo=data.grupo,
+            email=data.email
         )
 
         db.add(nueva)
@@ -83,7 +93,6 @@ def crear_reserva(data: dict, db: Session = Depends(get_db)):
     except Exception as e:
         print("Error en crear_reserva:", str(e))
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
-
 
 # Listar reservas
 @app.get("/reservas")
