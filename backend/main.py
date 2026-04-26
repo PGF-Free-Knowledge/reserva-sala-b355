@@ -36,58 +36,54 @@ def inicio():
 # Crear reserva
 @app.post("/reservas")
 def crear_reserva(data: dict, db: Session = Depends(get_db)):
-    print("Datos recibidos en crear_reserva:", data)
-
-    # Convertir fecha: aceptar DD/MM/YYYY y YYYY-MM-DD
     try:
+        print("Datos recibidos en crear_reserva:", data)
+
+        # Conversión de fecha
         if "/" in data["fecha"]:
             fecha = datetime.strptime(data["fecha"], "%d/%m/%Y").date()
         else:
             fecha = date.fromisoformat(data["fecha"])
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Formato de fecha inválido")
 
-    # Convertir horas
-    try:
+        # Conversión de horas
         inicio = time.fromisoformat(data["hora_inicio"])
         fin = time.fromisoformat(data["hora_fin"])
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Formato de hora inválido")
 
-    # Validar horario
-    if inicio < time(8, 0) or fin > time(18, 0):
-        raise HTTPException(status_code=400, detail="Horario fuera de rango (08:00 - 18:00)")
+        # Validaciones
+        if inicio < time(8, 0) or fin > time(18, 0):
+            raise HTTPException(status_code=400, detail="Horario fuera de rango (08:00 - 18:00)")
 
-    # Validar duración
-    duracion = (fin.hour * 60 + fin.minute) - (inicio.hour * 60 + inicio.minute)
-    duracion = duracion / 60
-    if duracion < 2 or duracion % 2 != 0 or duracion > 8:
-        raise HTTPException(status_code=400, detail="Duración inválida: solo bloques de 2 a 8 horas")
+        duracion = (fin.hour * 60 + fin.minute) - (inicio.hour * 60 + inicio.minute)
+        duracion = duracion / 60
+        if duracion < 2 or duracion % 2 != 0 or duracion > 8:
+            raise HTTPException(status_code=400, detail="Duración inválida: solo bloques de 2 a 8 horas")
 
-    # Validar correo
-    if not data["email"].endswith("@usm.cl"):
-        raise HTTPException(status_code=400, detail="Correo debe ser @usm.cl")
+        if not data["email"].endswith("@usm.cl"):
+            raise HTTPException(status_code=400, detail="Correo debe ser @usm.cl")
 
-    # Validar conflicto de horario
-    reservas = db.query(Reserva).filter(Reserva.fecha == fecha).all()
-    for r in reservas:
-        if not (fin <= r.hora_inicio or inicio >= r.hora_fin):
-            raise HTTPException(status_code=400, detail="Horario no disponible")
+        reservas = db.query(Reserva).filter(Reserva.fecha == fecha).all()
+        for r in reservas:
+            if not (fin <= r.hora_inicio or inicio >= r.hora_fin):
+                raise HTTPException(status_code=400, detail="Horario no disponible")
 
-    # Guardar
-    nueva = Reserva(
-        fecha=fecha,
-        hora_inicio=inicio,
-        hora_fin=fin,
-        responsable=data["responsable"],
-        grupo=data["grupo"],
-        email=data["email"]
-    )
+        nueva = Reserva(
+            fecha=fecha,
+            hora_inicio=inicio,
+            hora_fin=fin,
+            responsable=data["responsable"],
+            grupo=data["grupo"],
+            email=data["email"]
+        )
 
-    db.add(nueva)
-    db.commit()
+        db.add(nueva)
+        db.commit()
 
-    return {"mensaje": "Reserva guardada correctamente"}
+        return {"mensaje": "Reserva guardada correctamente"}
+
+    except Exception as e:
+        print("Error en crear_reserva:", str(e))
+        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+
 
 # Listar reservas
 @app.get("/reservas")
