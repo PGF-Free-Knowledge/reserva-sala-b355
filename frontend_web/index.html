@@ -120,11 +120,25 @@ function reservar(){
 
     } else {
 
-        fetch("https://reserva-sala-b355-electronica.onrender.com/reservas",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
+        fetch("https://reserva-sala-b355-electronica.onrender.com/reservas", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
             body: JSON.stringify(data)
-        }).then(()=>cargarReservas());
+        })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error("Error al guardar");
+            }
+            return res.json();
+        })
+        .then(() => {
+            alert("Reserva creada correctamente");
+            cargarReservas();
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error al guardar la reserva");
+        });
     }
 }
 
