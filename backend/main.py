@@ -130,7 +130,8 @@ def root():
 
 @app.get("/index.html")
 def get_index():
-    file_path = os.path.join("frontend_web", "index.html")
+    # Ruta absoluta desde la raíz del proyecto
+    file_path = os.path.join(os.path.dirname(__file__), "..", "frontend_web", "index.html")
     return FileResponse(file_path)
 
 @app.get("/api/status")
@@ -139,6 +140,7 @@ def status():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=10000)  # ← esta sigue siendo la última línea
+    uvicorn.run(app, host="0.0.0.0", port=10000)
+
 
 
