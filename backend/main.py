@@ -1,5 +1,6 @@
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.wsgi import WSGIMiddleware
 from sqlalchemy.orm import Session
 from backend.database import SessionLocal, engine, Base
 from backend.models import Reserva
@@ -9,47 +10,12 @@ import uvicorn
 import os
 
 # Importa el frontend Dash
-from fastapi.middleware.wsgi import WSGIMiddleware
-from frontend.app import app as dash_app   # aquí está tu app.py
+from frontend.app import app as dash_app
 
-app = FastAPI()  ##Rev PGF
-
-@app.get("/api/status")
-def status():
-    return {"mensaje": "Sistema funcionando con base de datos"}
-
-@app.get("/")   # ruta raíz simple
-def root():
-    return {"mensaje": "Sistema activo"}
-
-# Monta el frontend en /dash
-app.mount("/dash", WSGIMiddleware(dash_app))
-
-
-
-
-
-
-# Endpoint de prueba para el backend
-@app.get("/api/status")
-def status():
-    return {"mensaje": "Sistema funcionando con base de datos"}
+# Crear instancia FastAPI
+app = FastAPI()
 
 # Middleware CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-
-
-
-app = FastAPI()  ##Rev PGF
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -78,17 +44,22 @@ class ReservaInput(BaseModel):
     grupo: str
     email: str
 
-# Endpoint raíz
+# Endpoints básicos
 @app.get("/")
-def inicio():
+def root():
+    return {"mensaje": "Sistema activo"}
+
+@app.get("/api/status")
+def status():
     return {"mensaje": "Sistema funcionando con base de datos"}
+
+# Monta el frontend Dash en /dash
+app.mount("/dash", WSGIMiddleware(dash_app))
 
 # Crear reserva
 @app.post("/reservas")
 def crear_reserva(data: ReservaInput, db: Session = Depends(get_db)):
     try:
-        print("Datos recibidos en crear_reserva:", data.dict())
-
         # Conversión de fecha
         if "/" in data.fecha:
             fecha = datetime.strptime(data.fecha, "%d/%m/%Y").date()
@@ -111,11 +82,13 @@ def crear_reserva(data: ReservaInput, db: Session = Depends(get_db)):
         if not data.email.endswith("@usm.cl"):
             raise HTTPException(status_code=400, detail="Correo debe ser @usm.cl")
 
+        # Validar disponibilidad
         reservas = db.query(Reserva).filter(Reserva.fecha == fecha).all()
         for r in reservas:
             if not (fin <= r.hora_inicio or inicio >= r.hora_fin):
                 raise HTTPException(status_code=400, detail="Horario no disponible")
 
+        # Crear nueva reserva
         nueva = Reserva(
             fecha=fecha,
             hora_inicio=inicio,
@@ -131,29 +104,22 @@ def crear_reserva(data: ReservaInput, db: Session = Depends(get_db)):
         return {"mensaje": "Reserva guardada correctamente"}
 
     except HTTPException as e:
-        # Deja pasar los errores de validación tal cual
-        print("Error en crear_reserva:", e.detail)
         raise e
     except Exception as e:
-        # Solo captura errores inesperados
-        print("Error inesperado en crear_reserva:", str(e))
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
-
 
 # Eliminar reserva
 @app.delete("/reservas/{reserva_id}")
 def eliminar_reserva(reserva_id: int, db: Session = Depends(get_db)):
     reserva = db.query(Reserva).filter(Reserva.id == reserva_id).first()
-
     if not reserva:
         raise HTTPException(status_code=404, detail="Reserva no encontrada")
-
     db.delete(reserva)
     db.commit()
-
     return {"mensaje": "eliminado"}
 
-# RUN (IMPORTANTE PARA RENDER)
+# RUN (para Render)
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port)
+
