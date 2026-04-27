@@ -29,6 +29,7 @@ app.mount("/dash", WSGIMiddleware(dash_app))
 
 
 
+
 # Endpoint de prueba para el backend
 @app.get("/api/status")
 def status():
