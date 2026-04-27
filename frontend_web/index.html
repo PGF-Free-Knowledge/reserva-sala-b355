@@ -11,25 +11,21 @@ body {
     font-family: Arial;
     display: flex;
 }
-
 .sidebar {
     width: 200px;
     background: #0b1e3c;
     color: white;
     padding: 20px;
 }
-
 .main {
     flex: 1;
     background: #f4f6fb;
     padding: 20px;
 }
-
 .container {
     display: flex;
     gap: 20px;
 }
-
 .card {
     background: white;
     padding: 20px;
@@ -40,7 +36,6 @@ body {
 </head>
 
 <body>
-
 <div class="sidebar" style="text-align:center;">
     <div style="margin-bottom:20px;">
         <img src="logo_usm.png" style="width:150px; display:block; margin:0 auto 15px;">
@@ -51,43 +46,34 @@ body {
 </div>
 
 <div class="main">
-
 <h1>Reserva Sala B355</h1>
-
 <div class="container">
 
 <div class="card">
 <h3>Calendario</h3>
-
 <div style="margin-bottom:10px;">
 <button onclick="cambiarSemana(-1)">◀</button>
 <span id="semanaTexto"></span>
 <button onclick="cambiarSemana(1)">▶</button>
 </div>
-
 <div id="calendario" style="display:grid; grid-template-columns: 80px repeat(5, 1fr); gap:2px;"></div>
 </div>
 
 <div class="card">
 <h3>Nuevo / Editar Reserva</h3>
-
 <input type="date" id="fecha"><br><br>
 <input type="time" id="inicio"><br><br>
 <input type="time" id="fin"><br><br>
-
 <input type="email" id="email" placeholder="correo@usm.cl"><br><br>
 <input type="text" id="responsable"><br><br>
 <input type="text" id="grupo"><br><br>
-
 <button onclick="reservar()">Guardar</button>
 </div>
 
 </div>
-
 </div>
 
 <script>
-
 let semanaOffset = 0;
 let reservaSeleccionada = null;
 
@@ -97,7 +83,6 @@ function cambiarSemana(dir){
 }
 
 function reservar(){
-
     const data = {
         fecha: document.getElementById("fecha").value,
         hora_inicio: document.getElementById("inicio").value,
@@ -108,8 +93,7 @@ function reservar(){
     };
 
     if(reservaSeleccionada){
-
-        fetch(`https://reserva-sala-b355-electronica.onrender.com/reservas/${reservaSeleccionada}`,{
+        fetch(`https://reserva-sala-b355-elo.onrender.com/reservas/${reservaSeleccionada}`,{
             method:"PUT",
             headers:{"Content-Type":"application/json"},
             body: JSON.stringify(data)
@@ -117,18 +101,14 @@ function reservar(){
             reservaSeleccionada = null;
             cargarReservas();
         });
-
     } else {
-
         fetch("https://reserva-sala-b355-elo.onrender.com/reservas", {
             method: "POST",
             headers: {"Content-Type":"application/json"},
             body: JSON.stringify(data)
         })
         .then(res => {
-            if (!res.ok) {
-                throw new Error("Error al guardar");
-            }
+            if (!res.ok) throw new Error("Error al guardar");
             return res.json();
         })
         .then(() => {
@@ -143,41 +123,30 @@ function reservar(){
 }
 
 function cargarReservas(){
-
     fetch("https://reserva-sala-b355-elo.onrender.com/reservas")
     .then(res => {
-        if (!res.ok) {
-            throw new Error("Error al cargar reservas");
-        }
+        if (!res.ok) throw new Error("Error al cargar reservas");
         return res.json();
     })
     .then(data => {
-
         let inicioSemana = new Date();
         inicioSemana.setHours(0,0,0,0);
-
         let diaActual = inicioSemana.getDay() === 0 ? 6 : inicioSemana.getDay() - 1;
         inicioSemana.setDate(inicioSemana.getDate() - diaActual + (semanaOffset * 7));
-
         let finSemana = new Date(inicioSemana);
         finSemana.setDate(finSemana.getDate() + 4);
 
         document.getElementById("semanaTexto").innerText =
-            inicioSemana.toISOString().split("T")[0] +
-            " - " +
-            finSemana.toISOString().split("T")[0];
+            inicioSemana.toISOString().split("T")[0] + " - " + finSemana.toISOString().split("T")[0];
 
         const contenedor = document.getElementById("calendario");
         contenedor.innerHTML = "";
-
         const dias = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
-
         contenedor.appendChild(document.createElement("div"));
 
         dias.forEach((d,i)=>{
             let f = new Date(inicioSemana);
             f.setDate(f.getDate() + i);
-
             let div = document.createElement("div");
             div.innerText = `${d} ${f.getDate()}/${f.getMonth()+1}`;
             div.style.textAlign = "center";
@@ -187,50 +156,40 @@ function cargarReservas(){
         });
 
         for(let h = 8; h <= 18; h++){
-
             let hora = document.createElement("div");
             hora.innerText = `${h}:00`;
             contenedor.appendChild(hora);
 
             dias.forEach((d,i)=>{
-
                 let celda = document.createElement("div");
                 celda.style.height = "40px";
                 celda.style.border = "1px solid #ddd";
                 celda.style.position = "relative";
 
                 celda.addEventListener("click", ()=>{
-
                     let fecha = new Date(inicioSemana);
                     fecha.setDate(fecha.getDate() + i);
-
                     let yyyy = fecha.getFullYear();
                     let mm = String(fecha.getMonth()+1).padStart(2,'0');
                     let dd = String(fecha.getDate()).padStart(2,'0');
-
                     document.getElementById("fecha").value = `${yyyy}-${mm}-${dd}`;
                     document.getElementById("inicio").value = `${String(h).padStart(2,"0")}:00`;
                     document.getElementById("fin").value = `${String(h+2).padStart(2,"0")}:00`;
                 });
 
                 data.forEach(r=>{
-
                     let ini = parseInt(r.hora_inicio.slice(0,2));
                     let fin = parseInt(r.hora_fin.slice(0,2));
-
                     let fechaCelda = new Date(inicioSemana);
                     fechaCelda.setDate(fechaCelda.getDate() + i);
-
                     let yyyy = fechaCelda.getFullYear();
                     let mm = String(fechaCelda.getMonth()+1).padStart(2,'0');
                     let dd = String(fechaCelda.getDate()).padStart(2,'0');
-
                     let fechaStr = `${yyyy}-${mm}-${dd}`;
 
                     if(r.fecha === fechaStr && ini === h){
-
                         let bloque = document.createElement("div");
-                        bloque.style.fontSize = "20px"; // provisorio
+                        bloque.style.fontSize = "20px";
                         bloque.style.background = "#4dabf7";
                         bloque.style.position = "relative";
                         bloque.style.margin = "2px 0";
@@ -238,15 +197,11 @@ function cargarReservas(){
                         bloque.style.color = "white";
                         bloque.style.padding = "4px";
                         bloque.style.borderRadius = "6px";
-
                         bloque.innerHTML = `<b>${r.grupo}</b><br>${r.hora_inicio}-${r.hora_fin}`;
-
                         celda.appendChild(bloque);
                     }
                 });
-
                 contenedor.appendChild(celda);
-
             });
         }
     })
@@ -256,10 +211,7 @@ function cargarReservas(){
     });
 }
 
-
 window.addEventListener("load", cargarReservas);
-
 </script>
-
 </body>
 </html>
