@@ -118,8 +118,27 @@ def eliminar_reserva(reserva_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"mensaje": "eliminado"}
 
-# RUN (para Render)
+from fastapi import FastAPI
+from fastapi.responses import FileResponse, JSONResponse
+import os
+
+app = FastAPI()
+
+@app.get("/")
+def root():
+    return {"mensaje": "Sistema activo"}
+
+@app.get("/index.html")
+def get_index():
+    file_path = os.path.join("frontend_web", "index.html")
+    return FileResponse(file_path)
+
+@app.get("/api/status")
+def status():
+    return JSONResponse(content={"status": "ok"})
+
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=10000)  # ← esta sigue siendo la última línea
+
 
