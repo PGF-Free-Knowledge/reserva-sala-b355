@@ -13,11 +13,15 @@ from fastapi.middleware.wsgi import WSGIMiddleware
 from frontend.app import app as dash_app   # aquí está tu app.py
 
 app = FastAPI()  ##Rev PGF
+@app.get("/api/status")
+def status():
+    return {"mensaje": "Sistema funcionando con base de datos"}
+
 
 # Monta el frontend en la raíz "/"
 app.mount("/", WSGIMiddleware(dash_app))
 
-# Mueve tu endpoint de prueba a otra ruta
+# Endpoint de prueba para el backend
 @app.get("/api/status")
 def status():
     return {"mensaje": "Sistema funcionando con base de datos"}
@@ -30,6 +34,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 
 
