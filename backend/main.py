@@ -8,9 +8,9 @@ from pydantic import BaseModel
 import uvicorn
 import os
 
-# Importa tu frontend Dash
+# Importa el frontend Dash
 from fastapi.middleware.wsgi import WSGIMiddleware
-from frontend.app import app as dash_app   # ajusta la ruta si tu app.py está en otra carpeta
+from frontend.app import app as dash_app   # aquí está tu app.py
 
 app = FastAPI()  ##Rev PGF
 
