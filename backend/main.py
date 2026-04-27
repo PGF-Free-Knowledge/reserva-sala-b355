@@ -22,8 +22,10 @@ def status():
 def root():
     return {"mensaje": "Sistema activo"}
 
-# Monta el frontend en la raíz "/"
-app.mount("/", WSGIMiddleware(dash_app))
+# Monta el frontend en la ruta /dash
+app.mount("/dash", WSGIMiddleware(dash_app))
+
+
 
 
 # Endpoint de prueba para el backend
