@@ -122,6 +122,10 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse, JSONResponse
 import os
 
+from fastapi import FastAPI
+from fastapi.responses import FileResponse, JSONResponse
+import os
+
 app = FastAPI()
 
 @app.get("/")
@@ -130,7 +134,7 @@ def root():
 
 @app.get("/index.html")
 def get_index():
-    # Ruta absoluta: backend → subir un nivel → frontend_web
+    # Ruta absoluta desde backend → subir un nivel → frontend_web
     base_dir = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(base_dir, "..", "frontend_web", "index.html")
     return FileResponse(file_path)
@@ -142,6 +146,7 @@ def status():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=10000)
+
 
 
 
