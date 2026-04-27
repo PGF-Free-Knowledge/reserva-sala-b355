@@ -18,12 +18,13 @@ app = FastAPI()  ##Rev PGF
 def status():
     return {"mensaje": "Sistema funcionando con base de datos"}
 
-@app.get("/")   # nueva ruta raíz
+@app.get("/")   # ruta raíz simple
 def root():
     return {"mensaje": "Sistema activo"}
 
-# Monta el frontend en la ruta /dash
+# Monta el frontend en /dash
 app.mount("/dash", WSGIMiddleware(dash_app))
+
 
 
 
