@@ -4,9 +4,10 @@ from dash.dependencies import Input, Output, State
 import requests
 from datetime import datetime, timedelta
 
+# Instancia principal de Dash
 app = dash.Dash(__name__)
 
-# 🔹 URL centralizada del backend
+# URL del backend
 BACKEND_URL = "https://reserva-sala-b355-elo.onrender.com/reservas"
 
 HORAS = [
@@ -15,6 +16,7 @@ HORAS = [
     "16:00","17:00"
 ]
 
+# Layout principal
 app.layout = html.Div([
     html.H1("Reserva Sala Co-Working B355"),
 
@@ -34,9 +36,10 @@ app.layout = html.Div([
     html.Div(id="mensaje_error", style={"color": "red"}),
 
     html.H3("Horario del día"),
+    html.Div(id="horario"),
+
     html.H3("Calendario semanal"),
     html.Div(id="calendario"),
-    html.Div(id="horario"),
 
     html.H3("Seleccionar horario (visual)"),
     html.Div(id="horario-visual", style={"display": "flex", "gap": "10px"}),
@@ -45,7 +48,7 @@ app.layout = html.Div([
     dcc.Store(id="rango_temp"),
 ])
 
-# 🔹 Mostrar reservas
+# Mostrar reservas
 @app.callback(Output("tabla-reservas","children"), Input("btn-actualizar","n_clicks"))
 def listar_reservas(n):
     try:
@@ -54,7 +57,7 @@ def listar_reservas(n):
     except Exception as e:
         return f"Error al conectar con backend: {str(e)}"
 
-# 🔹 Crear reserva
+# Crear reserva
 @app.callback(Output("mensaje","children"),
               Input("btn-reservar","n_clicks"),
               State("fecha","value"), State("hora_inicio","value"), State("hora_fin","value"),
@@ -72,38 +75,7 @@ def crear_reserva(n, fecha, inicio, fin, responsable, grupo, email):
     except Exception as e:
         return f"Error al conectar con backend: {str(e)}"
 
-# 🔹 Dropdown dinámico
-@app.callback(
-    Output("hora_inicio","options"),
-    Output("hora_fin","options"),
-    Output("hora_inicio","value",allow_duplicate=True),
-    Output("hora_fin","value",allow_duplicate=True),
-    Input("interval-component","n_intervals"),
-    Input("hora_inicio","value"),
-    Input("fecha","value"),
-    State("hora_fin","value"),
-    prevent_initial_call=True
-)
-def actualizar_horas(_,hora_inicio_seleccionada,fecha,hora_fin_actual):
-    reservas = requests.get(BACKEND_URL).json()
-    reservas_del_dia = [r for r in reservas if r["fecha"] == fecha]
-    ocupadas = set()
-    for r in reservas_del_dia:
-        inicio = int(r["hora_inicio"][:2]); fin = int(r["hora_fin"][:2])
-        for h in range(inicio, fin): ocupadas.add(f"{h:02d}:00")
-    disponibles = [h for h in HORAS if h not in ocupadas]
-    opciones_inicio = [{"label": h, "value": h} for h in disponibles]
-    if hora_inicio_seleccionada and hora_inicio_seleccionada in disponibles:
-        idx = disponibles.index(hora_inicio_seleccionada)
-        opciones_fin_lista = disponibles[idx+1:]
-    else:
-        opciones_fin_lista = disponibles
-    opciones_fin = [{"label": h, "value": h} for h in opciones_fin_lista]
-    valor_inicio = hora_inicio_seleccionada if hora_inicio_seleccionada in disponibles else None
-    valor_fin = hora_fin_actual if hora_fin_actual in opciones_fin_lista else (opciones_fin_lista[0] if opciones_fin_lista else None)
-    return opciones_inicio, opciones_fin, valor_inicio, valor_fin
-
-# 🔹 Horario texto
+# Horario texto
 @app.callback(Output("horario","children"), Input("interval-component","n_intervals"), State("fecha","value"))
 def mostrar_horario(_, fecha):
     try:
@@ -113,98 +85,12 @@ def mostrar_horario(_, fecha):
         for r in reservas_del_dia:
             inicio = int(r["hora_inicio"][:2]); fin = int(r["hora_fin"][:2])
             for h in range(inicio, fin): ocupadas.add(f"{h:02d}:00")
-        return [html.Div(f"{h} - {'OCUPADO' if h in ocupadas else 'DISPONIBLE'}", style={"color":"red" if h in ocupadas else "green"}) for h in HORAS]
+        return [html.Div(f"{h} - {'OCUPADO' if h in ocupadas else 'DISPONIBLE'}",
+                         style={"color":"red" if h in ocupadas else "green"}) for h in HORAS]
     except Exception as e:
         return f"Error cargando horario: {str(e)}"
 
-# 🔹 Bloques visuales
-@app.callback(Output("horario-visual","children"),
-              Input("interval-component","n_intervals"),
-              State("fecha","value"), State("hora_inicio","value"), State("hora_fin","value"))
-def mostrar_horario_visual(_, fecha, inicio_sel, fin_sel):
-    try:
-        reservas = requests.get(BACKEND_URL).json()
-        reservas_del_dia = [r for r in reservas if r["fecha"] == fecha]
-        ocupadas = set()
-        for r in reservas_del_dia:
-            inicio = int(r["hora_inicio"][:2]); fin = int(r["hora_fin"][:2])
-            for h in range(inicio, fin): ocupadas.add(f"{h:02d}:00")
-        seleccionadas = set()
-        if inicio_sel and fin_sel:
-            i = int(inicio_sel[:2]); f = int(fin_sel[:2])
-            for h in range(i, f+1): seleccionadas.add(f"{h:02d}:00")
-        bloques = []
-        for h in HORAS:
-            if h in ocupadas: color="red"
-            elif h in seleccionadas: color="dodgerblue"
-            else: color="lightgreen"
-            bloques.append(html.Button(h, id={"type":"bloque-hora","index":h}, n_clicks=0,
-                                       disabled=True if h in ocupadas else False,
-                                       style={"padding":"10px","border":"1px solid black","backgroundColor":color,"cursor":"pointer","width":"60px"}))
-        return bloques
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-# 🔹 Selección de rango
-@app.callback(
-    Output("hora_inicio","value",allow_duplicate=True),
-    Output("hora_fin","value",allow_duplicate=True),
-    Output("rango_temp","data"),
-    Output("mensaje_error","children"),
-    Input({"type":"bloque-hora","index":dash.ALL},"n_clicks_timestamp"),
-    State({"type":"bloque-hora","index":dash.ALL},"id"),
-    State("rango_temp","data"),
-    State("fecha","value"),
-    prevent_initial_call=True
-)
-def seleccionar_rango(timestamps, ids, rango_temp, fecha):
-    if not timestamps:
-        return dash.no_update, dash.no_update, rango_temp, ""
-
-    reservas = requests.get(BACKEND_URL).json()
-    reservas_del_dia = [r for r in reservas if r["fecha"] == fecha]
-
-    ocupadas = set()
-    for r in reservas_del_dia:
-        inicio = int(r["hora_inicio"][:2])
-        fin = int(r["hora_fin"][:2])
-        for h in range(inicio, fin):
-            ocupadas.add(f"{h:02d}:00")
-
-    max_ts = max([t for t in timestamps if t is not None], default=None)
-    if max_ts is None:
-        return dash.no_update, dash.no_update, rango_temp, ""
-
-    for i, t in enumerate(timestamps):
-        if t == max_ts:
-            hora = ids[i]["index"]
-
-            if not rango_temp:
-                return hora, dash.no_update, {"inicio": hora}, ""
-
-            else:
-                inicio = rango_temp["inicio"]
-                h_inicio = int(inicio[:2])
-                h_fin = int(hora[:2])
-                duracion = abs(h_fin - h_inicio)
-
-                # 🔒 Validar duración
-                if duracion < 2 or duracion > 4:
-                    return dash.no_update, dash.no_update, None, "Rango inválido: solo entre 2 y 4 horas"
-
-                # 🔒 Validar cruce con ocupadas
-                for h in range(min(h_inicio, h_fin), max(h_inicio, h_fin)):
-                    if f"{h:02d}:00" in ocupadas:
-                        return dash.no_update, dash.no_update, None, "No puedes seleccionar un rango con horas ocupadas"
-
-                if h_fin > h_inicio:
-                    return inicio, hora, None, ""
-                else:
-                    return hora, inicio, None, ""
-
-    return dash.no_update, dash.no_update, rango_temp, ""
-
-# 🔹 Calendario semanal
+# Calendario semanal
 @app.callback(Output("calendario","children"),
               Input("interval-component","n_intervals"),
               State("fecha","value"))
@@ -251,7 +137,7 @@ def mostrar_calendario(_, fecha_seleccionada):
     except Exception as e:
         return f"Error cargando calendario: {str(e)}"
 
-# 🔹 Selección de fecha desde calendario
+# Selección de fecha desde calendario
 @app.callback(Output("fecha","value"),
               Input({"type":"fecha-click","index":dash.ALL},"n_clicks"),
               State({"type":"fecha-click","index":dash.ALL},"id"))
@@ -266,5 +152,6 @@ def seleccionar_fecha(n_clicks, ids):
             return ids[i]["index"]
     return dash.no_update
 
+# Run local (no se usa en Render, porque se monta desde main.py)
 if __name__ == "__main__":
     app.run(debug=True)
