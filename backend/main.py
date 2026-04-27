@@ -14,9 +14,15 @@ from frontend.app import app as dash_app   # aquí está tu app.py
 
 app = FastAPI()  ##Rev PGF
 
-# Monta el frontend en la raíz
+# Monta el frontend en la raíz "/"
 app.mount("/", WSGIMiddleware(dash_app))
 
+# Mueve tu endpoint de prueba a otra ruta
+@app.get("/api/status")
+def status():
+    return {"mensaje": "Sistema funcionando con base de datos"}
+
+# Middleware CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,6 +30,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 
 
