@@ -210,6 +210,70 @@ def get_logo_electronica():
         raise HTTPException(status_code=404, detail="Logo Electrónica no encontrado")
     return FileResponse(file_path)
 
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.orm import sessionmaker, declarative_base
+
+app = FastAPI()
+
+# Configuración SQLite
+DATABASE_URL = "sqlite:///reservas.db"
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+# Modelo de reservas
+class Reserva(Base):
+    __tablename__ = "reservas"
+    id = Column(Integer, primary_key=True, index=True)
+    fecha = Column(String, index=True)
+    hora_inicio = Column(String)
+    hora_fin = Column(String)
+    responsable = Column(String)
+    grupo = Column(String)
+    email = Column(String)
+
+Base.metadata.create_all(bind=engine)
+
+# Crear reserva
+@app.post("/reservas")
+def crear_reserva(reserva: dict):
+    if not reserva.get("email", "").endswith("@usm.cl"):
+        raise HTTPException(status_code=400, detail="Email inválido")
+
+    db = SessionLocal()
+    nueva = Reserva(**reserva)
+    db.add(nueva)
+    db.commit()
+    db.refresh(nueva)
+    db.close()
+    return JSONResponse(content={"mensaje": "Reserva creada"}, status_code=200)
+
+# Listar reservas
+@app.get("/reservas")
+def listar_reservas():
+    db = SessionLocal()
+    data = db.query(Reserva).all()
+    db.close()
+    return data
+
+# Actualizar reserva
+@app.put("/reservas/{id}")
+def actualizar_reserva(id: int, reserva: dict):
+    db = SessionLocal()
+    r = db.query(Reserva).filter(Reserva.id == id).first()
+    if not r:
+        db.close()
+        raise HTTPException(status_code=404, detail="Reserva no encontrada")
+    for key, value in reserva.items():
+        setattr(r, key, value)
+    db.commit()
+    db.refresh(r)
+    db.close()
+    return {"mensaje": "Reserva actualizada"}
+
 
 
 if __name__ == "__main__":
