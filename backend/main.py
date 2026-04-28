@@ -163,10 +163,24 @@ def listar_reservas():
 
 @app.post("/reservas")
 def crear_reserva(reserva: dict):
+    # Validar email
     if not reserva.get("email", "").endswith("@usm.cl"):
         raise HTTPException(status_code=400, detail="Email inválido")
+
+    # Validar solapamiento de horarios
+    for r in reservas:
+        if r["fecha"] == reserva["fecha"]:
+            ini = int(r["hora_inicio"].split(":")[0])
+            fin = int(r["hora_fin"].split(":")[0])
+            nuevo_ini = int(reserva["hora_inicio"].split(":")[0])
+            nuevo_fin = int(reserva["hora_fin"].split(":")[0])
+            # Si los rangos se cruzan, error
+            if not (nuevo_fin <= ini or nuevo_ini >= fin):
+                raise HTTPException(status_code=400, detail="Horario ocupado")
+
     reservas.append(reserva)
     return JSONResponse(content={"mensaje": "Reserva creada"}, status_code=200)
+
 
 @app.put("/reservas/{id}")
 def actualizar_reserva(id: int, reserva: dict):
