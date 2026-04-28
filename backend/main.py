@@ -137,6 +137,44 @@ def get_index():
     file_path = os.path.join(os.path.dirname(__file__), "index.html")
     return FileResponse(file_path)
 
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse, JSONResponse
+import os
+
+app = FastAPI()
+
+@app.get("/")
+def root():
+    return {"mensaje": "Sistema activo"}
+
+@app.get("/index.html")
+def get_index():
+    file_path = os.path.join(os.path.dirname(__file__), "index.html")
+    return FileResponse(file_path)
+
+# -------------------------------
+# NUEVAS RUTAS PARA RESERVAS
+# -------------------------------
+reservas = []
+
+@app.get("/reservas")
+def listar_reservas():
+    return reservas
+
+@app.post("/reservas")
+def crear_reserva(reserva: dict):
+    if not reserva.get("email", "").endswith("@usm.cl"):
+        raise HTTPException(status_code=400, detail="Email inválido")
+    reservas.append(reserva)
+    return JSONResponse(content={"mensaje": "Reserva creada"}, status_code=200)
+
+@app.put("/reservas/{id}")
+def actualizar_reserva(id: int, reserva: dict):
+    if id < 0 or id >= len(reservas):
+        raise HTTPException(status_code=404, detail="Reserva no encontrada")
+    reservas[id] = reserva
+    return {"mensaje": "Reserva actualizada"}
+
 
 @app.get("/api/status")
 def status():
