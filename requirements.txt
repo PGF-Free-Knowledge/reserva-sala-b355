@@ -2,4 +2,3 @@ fastapi
 uvicorn[standard]
 sqlalchemy
 dash
-psycopg2-binary
