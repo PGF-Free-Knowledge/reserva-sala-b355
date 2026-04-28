@@ -202,7 +202,7 @@ def status():
 
 from fastapi.responses import FileResponse
 
-@app.get("/logo_usm.png")
+@app.get("/logo_usm.png")###
 def get_logo_usm():
     file_path = os.path.join(os.path.dirname(__file__), "logo_usm.png")
     if not os.path.exists(file_path):
