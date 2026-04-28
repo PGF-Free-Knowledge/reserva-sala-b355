@@ -194,6 +194,24 @@ def actualizar_reserva(id: int, reserva: dict):
 def status():
     return JSONResponse(content={"status": "ok"})
 
+from fastapi.responses import FileResponse
+
+@app.get("/logo_usm.png")
+def get_logo_usm():
+    file_path = os.path.join(os.path.dirname(__file__), "logo_usm.png")
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Logo USM no encontrado")
+    return FileResponse(file_path)
+
+@app.get("/logo_electronica.png")
+def get_logo_electronica():
+    file_path = os.path.join(os.path.dirname(__file__), "logo_electronica.png")
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Logo Electrónica no encontrado")
+    return FileResponse(file_path)
+
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=10000)
