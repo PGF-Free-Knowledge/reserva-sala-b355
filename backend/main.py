@@ -1,12 +1,10 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import Session
+from fastapi.middleware.wsgi import WSGIMiddleware
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.orm import sessionmaker, declarative_base, Session
 import os
-
-# Importar conexión desde database.py
-from backend.database import SessionLocal, Base, init_db, get_db
 
 # Instancia FastAPI
 app = FastAPI()
@@ -20,8 +18,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Inicializar tablas en Postgres
-init_db()
+# Configuración SQLite
+DATABASE_URL = "sqlite:///reservas.db"
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
 
 # Modelo de reservas
 class Reserva(Base):
@@ -33,6 +34,16 @@ class Reserva(Base):
     responsable = Column(String)
     grupo = Column(String)
     email = Column(String)
+
+Base.metadata.create_all(bind=engine)
+
+# Conexión DB
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 # -------------------------------
 # RUTAS FRONTEND
@@ -71,28 +82,38 @@ def listar_reservas(db: Session = Depends(get_db)):
 def crear_reserva(reserva: dict, db: Session = Depends(get_db)):
     if not reserva.get("email", "").endswith("@usm.cl"):
         raise HTTPException(status_code=400, detail="Email inválido")
-
-    # Validaciones de fecha y horario
+    
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    # BLOQUE DE VALIDACIONES 
     from datetime import datetime, time
+
     fecha = datetime.strptime(reserva["fecha"], "%Y-%m-%d").date()
     hora_inicio = datetime.strptime(reserva["hora_inicio"], "%H:%M").time()
     hora_fin = datetime.strptime(reserva["hora_fin"], "%H:%M").time()
-
+    # Nueva validación: no permitir fechas pasadas
     if fecha < datetime.today().date():
         raise HTTPException(status_code=400, detail="No se permiten reservas en fechas anteriores al día actual")
+
+    # Día hábil
     if fecha.weekday() >= 5:
         raise HTTPException(status_code=400, detail="Solo se permiten reservas de lunes a viernes")
+
+    # Horario permitido
     if hora_inicio < time(8,0) or hora_fin > time(18,0):
         raise HTTPException(status_code=400, detail="Reservas solo entre 08:00 y 18:00")
+
+    # Horas cerradas y pares
     if hora_inicio.minute != 0 or hora_fin.minute != 0:
         raise HTTPException(status_code=400, detail="Las horas deben ser exactas (ej: 08:00, 10:00)")
     if hora_inicio.hour % 2 != 0 or hora_fin.hour % 2 != 0:
         raise HTTPException(status_code=400, detail="Las reservas deben comenzar y terminar en horas pares")
 
+    # Duración mínima de 2 horas
     duracion = (datetime.combine(fecha, hora_fin) - datetime.combine(fecha, hora_inicio)).seconds / 3600
     if duracion < 2:
         raise HTTPException(status_code=400, detail="La duración mínima es de 2 horas")
 
+    # Máximo 4 horas por grupo/día
     reservas_grupo = db.query(Reserva).filter(
         Reserva.grupo == reserva["grupo"],
         Reserva.fecha == reserva["fecha"]
@@ -103,6 +124,8 @@ def crear_reserva(reserva: dict, db: Session = Depends(get_db)):
     )
     if horas_existentes + duracion > 4:
         raise HTTPException(status_code=400, detail="Cada grupo puede reservar máximo 4 horas por día")
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    # FIN DEL BLOQUE NUEVO
 
     nueva = Reserva(**reserva)
     db.add(nueva)
@@ -137,4 +160,5 @@ def status():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=10000)
+
 
