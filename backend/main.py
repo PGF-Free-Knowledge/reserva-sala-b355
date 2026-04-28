@@ -90,6 +90,9 @@ def crear_reserva(reserva: dict, db: Session = Depends(get_db)):
     fecha = datetime.strptime(reserva["fecha"], "%Y-%m-%d").date()
     hora_inicio = datetime.strptime(reserva["hora_inicio"], "%H:%M").time()
     hora_fin = datetime.strptime(reserva["hora_fin"], "%H:%M").time()
+    # Nueva validación: no permitir fechas pasadas
+    if fecha < datetime.today().date():
+        raise HTTPException(status_code=400, detail="No se permiten reservas en fechas anteriores al día actual")
 
     # Día hábil
     if fecha.weekday() >= 5:
