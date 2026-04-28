@@ -2,39 +2,16 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Reserva Sala</title>
+<title>Reserva Sala B355</title>
 <link rel="icon" href="data:,">
-
 <style>
-body {
-    margin: 0;
-    font-family: Arial;
-    display: flex;
-}
-.sidebar {
-    width: 200px;
-    background: #0b1e3c;
-    color: white;
-    padding: 20px;
-}
-.main {
-    flex: 1;
-    background: #f4f6fb;
-    padding: 20px;
-}
-.container {
-    display: flex;
-    gap: 20px;
-}
-.card {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    flex: 1;
-}
+body { margin:0; font-family:Arial; display:flex; }
+.sidebar { width:200px; background:#0b1e3c; color:white; padding:20px; }
+.main { flex:1; background:#f4f6fb; padding:20px; }
+.container { display:flex; gap:20px; }
+.card { background:white; padding:20px; border-radius:10px; flex:1; }
 </style>
 </head>
-
 <body>
 <div class="sidebar" style="text-align:center;">
     <div style="margin-bottom:20px;">
@@ -56,7 +33,7 @@ body {
 <span id="semanaTexto"></span>
 <button onclick="cambiarSemana(1)">▶</button>
 </div>
-<div id="calendario" style="display:grid; grid-template-columns: 80px repeat(5, 1fr); gap:2px;"></div>
+<div id="calendario" style="display:grid; grid-template-columns:80px repeat(5,1fr); gap:2px;"></div>
 </div>
 
 <div class="card">
@@ -93,7 +70,7 @@ function reservar(){
     };
 
     if(reservaSeleccionada){
-        fetch(`https://reserva-sala-b355-elo.onrender.com/reservas/${reservaSeleccionada}`,{
+        fetch(`/reservas/${reservaSeleccionada}`, {
             method:"PUT",
             headers:{"Content-Type":"application/json"},
             body: JSON.stringify(data)
@@ -102,7 +79,7 @@ function reservar(){
             cargarReservas();
         });
     } else {
-        fetch("https://reserva-sala-b355-elo.onrender.com/reservas", {
+        fetch("/reservas", {
             method: "POST",
             headers: {"Content-Type":"application/json"},
             body: JSON.stringify(data)
@@ -115,15 +92,14 @@ function reservar(){
             alert("Reserva creada correctamente");
             cargarReservas();
         })
-        .catch(err => {
-            console.error(err);
+        .catch(() => {
             alert("Error al guardar la reserva");
         });
     }
 }
 
 function cargarReservas(){
-    fetch("https://reserva-sala-b355-elo.onrender.com/reservas")
+    fetch("/reservas")
     .then(res => {
         if (!res.ok) throw new Error("Error al cargar reservas");
         return res.json();
@@ -205,8 +181,7 @@ function cargarReservas(){
             });
         }
     })
-    .catch(err => {
-        console.error("Error cargando reservas:", err);
+    .catch(() => {
         alert("No se pudieron cargar las reservas");
     });
 }
