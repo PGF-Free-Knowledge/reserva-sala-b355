@@ -134,10 +134,9 @@ def root():
 
 @app.get("/index.html")
 def get_index():
-    # Ruta absoluta desde backend → subir un nivel → frontend_web
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(base_dir, "..", "frontend_web", "index.html")
+    file_path = os.path.join(os.path.dirname(__file__), "index.html")
     return FileResponse(file_path)
+
 
 @app.get("/api/status")
 def status():
