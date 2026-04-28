@@ -15,6 +15,12 @@ from frontend.app import app as dash_app
 # Crear instancia FastAPI
 app = FastAPI()
 
+from fastapi.responses import FileResponse
+
+@app.get("/")
+def root():
+    return FileResponse("index.html")
+
 # Middleware CORS
 app.add_middleware(
     CORSMiddleware,
