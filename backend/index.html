@@ -4,40 +4,73 @@
 <meta charset="UTF-8">
 <title>Reserva-Sala-B355</title>
 <link rel="icon" href="data:,">
+
 <style>
 body { margin:0; font-family:Arial; display:flex; }
-.sidebar { width:200px; background:#0b1e3c; color:white; padding:20px; }
-.main { flex:1; background:#f4f6fb; padding:20px; }
-.container { display:flex; gap:20px; }
-.card { background:white; padding:20px; border-radius:10px; flex:1; }
+
+.sidebar {
+    width:200px;
+    background:#0b1e3c;
+    color:white;
+    padding:20px;
+}
+
+.main {
+    flex:1;
+    background:#f4f6fb;
+    padding:20px;
+}
+
+.container {
+    display:flex;
+    gap:20px;
+}
+
+.card {
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    flex:1;
+}
+
+label {
+    font-weight:bold;
+}
 </style>
 </head>
+
 <body>
+
 <div class="sidebar" style="text-align:center;">
-    <div style="margin-bottom:20px;">
-        <img src="logo_usm.png" style="width:150px; display:block; margin:0 auto 15px;">
-        <img src="logo_electronica.png" style="width:120px; display:block; margin:0 auto;">
-    </div>
+    <img src="logo_usm.png" style="width:150px; margin-bottom:10px;">
+    <img src="logo_electronica.png" style="width:120px;">
     <h2>ELO</h2>
     <p>Calendario</p>
 </div>
 
 <div class="main">
+
 <h1>Reserva Sala B355</h1>
+
 <div class="container">
 
+<!-- CALENDARIO SEMANAL -->
 <div class="card">
-<h3>Calendario</h3>
+<h3>Calendario semanal</h3>
+
 <div style="margin-bottom:10px;">
 <button onclick="cambiarSemana(-1)">◀</button>
 <span id="semanaTexto"></span>
 <button onclick="cambiarSemana(1)">▶</button>
 </div>
+
 <div id="calendario" style="display:grid; grid-template-columns:80px repeat(5,1fr); gap:2px;"></div>
 </div>
 
+<!-- FORMULARIO -->
 <div class="card">
 <h3>Nueva / Editar Reserva</h3>
+
 <label>Fecha</label><br>
 <input type="date" id="fecha"><br><br>
 
@@ -57,20 +90,37 @@ body { margin:0; font-family:Arial; display:flex; }
 <input type="text" id="grupo"><br><br>
 
 <button onclick="reservar()">Guardar</button>
+
 </div>
 
 </div>
+
+<!-- VISTA 3 MESES -->
+<div class="card" style="margin-top:20px;">
+<h3>Vista general (3 meses)</h3>
+
+<div style="margin-bottom:10px;">
+<button onclick="cambiarMes(-1)">◀</button>
+<span id="mesTexto"></span>
+<button onclick="cambiarMes(1)">▶</button>
+</div>
+
+<div id="calendario3Meses" style="
+display:grid;
+grid-template-columns: repeat(3, 1fr);
+gap:15px;"></div>
+
+</div>
+
 </div>
 
 <script>
+
 let semanaOffset = 0;
+let mesOffset = 0;
 let reservaSeleccionada = null;
 
-function cambiarSemana(dir){
-    semanaOffset += dir;
-    cargarReservas();
-}
-
+// --------------------- RESERVAR ---------------------
 function reservar(){
     const data = {
         fecha: document.getElementById("fecha").value,
@@ -81,124 +131,179 @@ function reservar(){
         email: document.getElementById("email").value
     };
 
-    if(reservaSeleccionada){
-        fetch(`/reservas/${reservaSeleccionada}`, {
-            method:"PUT",
-            headers:{"Content-Type":"application/json"},
-            body: JSON.stringify(data)
-        }).then(()=>{
-            reservaSeleccionada = null;
-            cargarReservas();
+    fetch("/reservas", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify(data)
+    })
+    .then(res => {
+        if(!res.ok) throw new Error();
+        return res.json();
+    })
+    .then(()=>{
+        alert("Reserva creada");
+        cargarReservas();
+    })
+    .catch(()=>alert("Error al guardar"));
+}
+
+// --------------------- SEMANA ---------------------
+function cambiarSemana(dir){
+    semanaOffset += dir;
+    cargarReservas();
+}
+
+// --------------------- MES ---------------------
+function cambiarMes(dir){
+    mesOffset += dir;
+    cargarReservas();
+}
+
+// --------------------- CARGAR RESERVAS ---------------------
+function cargarReservas(){
+
+fetch("/reservas")
+.then(res => res.json())
+.then(data => {
+
+    // ================= SEMANAL =================
+    let inicioSemana = new Date();
+    inicioSemana.setHours(0,0,0,0);
+    let diaActual = inicioSemana.getDay() === 0 ? 6 : inicioSemana.getDay()-1;
+    inicioSemana.setDate(inicioSemana.getDate() - diaActual + semanaOffset*7);
+
+    let finSemana = new Date(inicioSemana);
+    finSemana.setDate(finSemana.getDate() + 4);
+
+    document.getElementById("semanaTexto").innerText =
+        inicioSemana.toISOString().split("T")[0] + " - " +
+        finSemana.toISOString().split("T")[0];
+
+    const cont = document.getElementById("calendario");
+    cont.innerHTML = "";
+
+    const dias = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
+
+    cont.appendChild(document.createElement("div"));
+
+    dias.forEach((d,i)=>{
+        let f = new Date(inicioSemana);
+        f.setDate(f.getDate()+i);
+        let div = document.createElement("div");
+        div.innerText = `${d} ${f.getDate()}/${f.getMonth()+1}`;
+        div.style.textAlign="center";
+        div.style.fontWeight="bold";
+        div.style.background="#e9ecef";
+        cont.appendChild(div);
+    });
+
+    for(let h=8; h<=18; h++){
+        let hora=document.createElement("div");
+        hora.innerText=`${h}:00`;
+        cont.appendChild(hora);
+
+        dias.forEach((d,i)=>{
+            let celda=document.createElement("div");
+            celda.style.height="40px";
+            celda.style.border="1px solid #ddd";
+
+            data.forEach(r=>{
+                let ini=parseInt(r.hora_inicio);
+                let fin=parseInt(r.hora_fin);
+
+                let f=new Date(inicioSemana);
+                f.setDate(f.getDate()+i);
+
+                let fechaStr=f.toISOString().split("T")[0];
+
+                if(r.fecha===fechaStr && ini===h){
+                    let bloque=document.createElement("div");
+                    bloque.style.background="#4dabf7";
+                    bloque.style.height=(fin-ini)*40+"px";
+                    bloque.style.color="white";
+                    bloque.innerHTML=`<b>${r.grupo}</b>`;
+                    celda.appendChild(bloque);
+                }
+            });
+
+            cont.appendChild(celda);
         });
-    } else {
-        fetch("/reservas", {
-            method: "POST",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify(data)
-        })
-        .then(res => {
-            if (!res.ok) throw new Error("Error al guardar");
-            return res.json();
-        })
-        .then(() => {
-            alert("Reserva creada correctamente");
-            cargarReservas();
-        })
-        .catch(() => {
-            alert("Error al guardar la reserva");
-        });
+    }
+
+    // ================= 3 MESES =================
+    cargarCalendario3Meses(data);
+
+});
+}
+
+// --------------------- 3 MESES ---------------------
+function cargarCalendario3Meses(reservas){
+
+    const cont=document.getElementById("calendario3Meses");
+    cont.innerHTML="";
+
+    let base=new Date();
+    base.setDate(1);
+    base.setMonth(base.getMonth()+mesOffset);
+
+    document.getElementById("mesTexto").innerText =
+        base.toLocaleString('es-ES',{month:'long',year:'numeric'});
+
+    for(let m=0;m<3;m++){
+
+        let mes=new Date(base.getFullYear(),base.getMonth()+m,1);
+
+        let divMes=document.createElement("div");
+        divMes.style.background="white";
+        divMes.style.padding="10px";
+        divMes.style.borderRadius="10px";
+
+        let titulo=document.createElement("h4");
+        titulo.innerText=mes.toLocaleString('es-ES',{month:'long',year:'numeric'});
+        titulo.style.textAlign="center";
+
+        divMes.appendChild(titulo);
+
+        let grid=document.createElement("div");
+        grid.style.display="grid";
+        grid.style.gridTemplateColumns="repeat(7,1fr)";
+        grid.style.gap="3px";
+
+        let ultimo=new Date(mes.getFullYear(),mes.getMonth()+1,0);
+
+        for(let d=1;d<=ultimo.getDate();d++){
+
+            let fecha=new Date(mes.getFullYear(),mes.getMonth(),d);
+            let fechaStr=fecha.toISOString().split("T")[0];
+
+            let celda=document.createElement("div");
+            celda.style.padding="5px";
+            celda.style.textAlign="center";
+            celda.style.borderRadius="5px";
+            celda.style.fontSize="12px";
+
+            let reservasDia=reservas.filter(r=>r.fecha===fechaStr);
+
+            if(reservasDia.length>0){
+                celda.style.background="#ff6b6b";
+                celda.style.color="white";
+                celda.innerHTML=`<b>${d}</b><br>${reservasDia.length}`;
+            } else {
+                celda.style.background="#d3f9d8";
+                celda.innerHTML=`<b>${d}</b>`;
+            }
+
+            grid.appendChild(celda);
+        }
+
+        divMes.appendChild(grid);
+        cont.appendChild(divMes);
     }
 }
 
-function cargarReservas(){
-    fetch("/reservas")
-    .then(res => {
-        if (!res.ok) throw new Error("Error al cargar reservas");
-        return res.json();
-    })
-    .then(data => {
-        let inicioSemana = new Date();
-        inicioSemana.setHours(0,0,0,0);
-        let diaActual = inicioSemana.getDay() === 0 ? 6 : inicioSemana.getDay() - 1;
-        inicioSemana.setDate(inicioSemana.getDate() - diaActual + (semanaOffset * 7));
-        let finSemana = new Date(inicioSemana);
-        finSemana.setDate(finSemana.getDate() + 4);
+window.onload = cargarReservas;
 
-        document.getElementById("semanaTexto").innerText =
-            inicioSemana.toISOString().split("T")[0] + " - " + finSemana.toISOString().split("T")[0];
-
-        const contenedor = document.getElementById("calendario");
-        contenedor.innerHTML = "";
-        const dias = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
-        contenedor.appendChild(document.createElement("div"));
-
-        dias.forEach((d,i)=>{
-            let f = new Date(inicioSemana);
-            f.setDate(f.getDate() + i);
-            let div = document.createElement("div");
-            div.innerText = `${d} ${f.getDate()}/${f.getMonth()+1}`;
-            div.style.textAlign = "center";
-            div.style.fontWeight = "bold";
-            div.style.background = "#e9ecef";
-            contenedor.appendChild(div);
-        });
-
-        for(let h = 8; h <= 18; h++){
-            let hora = document.createElement("div");
-            hora.innerText = `${h}:00`;
-            contenedor.appendChild(hora);
-
-            dias.forEach((d,i)=>{
-                let celda = document.createElement("div");
-                celda.style.height = "40px";
-                celda.style.border = "1px solid #ddd";
-                celda.style.position = "relative";
-
-                celda.addEventListener("click", ()=>{
-                    let fecha = new Date(inicioSemana);
-                    fecha.setDate(fecha.getDate() + i);
-                    let yyyy = fecha.getFullYear();
-                    let mm = String(fecha.getMonth()+1).padStart(2,'0');
-                    let dd = String(fecha.getDate()).padStart(2,'0');
-                    document.getElementById("fecha").value = `${yyyy}-${mm}-${dd}`;
-                    document.getElementById("inicio").value = `${String(h).padStart(2,"0")}:00`;
-                    document.getElementById("fin").value = `${String(h+2).padStart(2,"0")}:00`;
-                });
-
-                data.forEach(r=>{
-                    let ini = parseInt(r.hora_inicio.slice(0,2));
-                    let fin = parseInt(r.hora_fin.slice(0,2));
-                    let fechaCelda = new Date(inicioSemana);
-                    fechaCelda.setDate(fechaCelda.getDate() + i);
-                    let yyyy = fechaCelda.getFullYear();
-                    let mm = String(fechaCelda.getMonth()+1).padStart(2,'0');
-                    let dd = String(fechaCelda.getDate()).padStart(2,'0');
-                    let fechaStr = `${yyyy}-${mm}-${dd}`;
-
-                    if(r.fecha === fechaStr && ini === h){
-                        let bloque = document.createElement("div");
-                        bloque.style.fontSize = "20px";
-                        bloque.style.background = "#4dabf7";
-                        bloque.style.position = "relative";
-                        bloque.style.margin = "2px 0";
-                        bloque.style.height = `${(fin-ini)*40}px`;
-                        bloque.style.color = "white";
-                        bloque.style.padding = "4px";
-                        bloque.style.borderRadius = "6px";
-                        bloque.innerHTML = `<b>${r.grupo}</b><br>${r.hora_inicio}-${r.hora_fin}`;
-                        celda.appendChild(bloque);
-                    }
-                });
-                contenedor.appendChild(celda);
-            });
-        }
-    })
-    .catch(() => {
-        alert("No se pudieron cargar las reservas");
-    });
-}
-
-window.addEventListener("load", cargarReservas);
 </script>
+
 </body>
 </html>
