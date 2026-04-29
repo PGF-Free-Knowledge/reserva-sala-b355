@@ -1,198 +1,198 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Reserva-Sala-B355</title>
-<link rel="icon" href="data:,">
-
-<style>
-body { margin:0; font-family:Arial; display:flex; }
-
-.sidebar {
-    width:200px;
-    background:#0b1e3c;
-    color:white;
-    padding:20px;
-}
-
-.main {
-    flex:1;
-    background:#f4f6fb;
-    padding:20px;
-}
-
-.container {
-    display:flex;
-    gap:20px;
-}
-
-.card {
-    background:white;
-    padding:20px;
-    border-radius:10px;
-    flex:1;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.info {
-    max-width:300px;
-    font-size:14px;
-    line-height:1.5;
-}
-
-label { font-weight:bold; }
-
-hr { margin:15px 0; }
-</style>
-</head>
-
-<body>
-
-<div class="sidebar" style="text-align:center;">
-    <img src="logo_usm.png" style="width:150px; margin-bottom:10px;">
-    <img src="logo_electronica.png" style="width:120px;">
-    <h2>ELO</h2>
-    <p>Calendario</p>
-</div>
-
-<div class="main">
-
-<h1>Reserva Sala B355</h1>
-
-<div class="container">
-
-<!-- CALENDARIO -->
-<div class="card">
-<h3>Calendario semanal</h3>
-
-<div style="margin-bottom:10px;">
-<button onclick="cambiarSemana(-1)">◀</button>
-<span id="semanaTexto"></span>
-<button onclick="cambiarSemana(1)">▶</button>
-</div>
-
-<div id="calendario" style="display:grid; grid-template-columns:80px repeat(5,1fr); gap:2px;"></div>
-</div>
-
-<!-- FORMULARIO -->
-<div class="card">
-<h3>Nueva / Editar Reserva</h3>
-
-<label>Fecha</label><br>
-<input type="date" id="fecha"><br><br>
-
-<label>Hora inicio</label><br>
-<input type="time" id="inicio"><br><br>
-
-<label>Hora término</label><br>
-<input type="time" id="fin"><br><br>
-
-<label>Email</label><br>
-<input type="email" id="email" placeholder="correo@usm.cl"><br><br>
-
-<label>Tema</label><br>
-<input type="text" id="responsable"><br><br>
-
-<label>N° de Grupo</label><br>
-<input type="text" id="grupo"><br><br>
-
-<button onclick="reservar()">Guardar</button>
-</div>
-
-<!-- PANEL INFORMACIÓN -->
-<div class="card info">
-
-<h3>Información</h3>
-
-<p><strong>Administrador:</strong><br>
-Paul Gálvez</p>
-
-<p><strong>Email:</strong><br>
-paul.galvez@usm.cl</p>
-
-<p><strong>Ubicación:</strong><br>
-Departamento de Electrónica<br>
-Oficina B-028</p>
-
-<hr>
-
-<h4>Uso del espacio</h4>
-<p>
-Durante el período de <strong>mayo a septiembre</strong>, la sala se orienta al desarrollo de proyectos
-para la <strong>Muestra TECH</strong>, permitiendo a los estudiantes planificar, avanzar y consolidar sus ideas.
-</p>
-
-<h4>Impacto</h4>
-<ul style="padding-left:18px;">
-<li>Meta 2026: <strong>40 proyectos</strong></li>
-<li>Año 2025: <strong>22 proyectos</strong></li>
-<li>Carreras:
-    <ul>
-        <li>Ingeniería Civil Electrónica</li>
-        <li>Ingeniería Civil Telemática</li>
-    </ul>
-</li>
-</ul>
-
-<hr>
-
-<h4>Objetivo General</h4>
-<p>
-Consolidar el espacio de coworking como un entorno colaborativo para el desarrollo de proyectos,
-reuniones, tutorías y actividades de innovación que integren a estudiantes, académicos y empresas.
-</p>
-
-<details>
-<summary style="cursor:pointer; font-weight:bold;">Objetivos Específicos</summary>
-
-<ul style="padding-left:18px; margin-top:10px;">
-<li>Promover el trabajo colaborativo entre niveles y áreas.</li>
-<li>Fomentar interacción con empresas y proyectos conjuntos.</li>
-<li>Impulsar integración entre formación e investigación aplicada.</li>
-<li>Potenciar la coordinación de la Muestra TECH.</li>
-<li>Desarrollar habilidades de gestión e innovación.</li>
-<li>Implementar un sistema transparente de reservas.</li>
-</ul>
-
-</details>
-
-<hr>
-
-<h4>Noticias</h4>
-<p>Revisa la nota institucional de la Muestra TECH:</p>
-
-<a href="https://usm.cl/noticias/muestra-tech-usm-vuelve-y-proyecta-nueva-etapa-de-innovacion-estudiantil/"
-   target="_blank"
-   style="color:#1c7ed6; text-decoration:none;">
-   Ver noticia →
-</a>
-
-</div>
-
-</div>
-
-<!-- VISTA 3 MESES -->
-<div class="card" style="margin-top:20px;">
-<h3>Vista general (3 meses)</h3>
-
-<div style="margin-bottom:10px;">
-<button onclick="cambiarMes(-1)">◀</button>
-<span id="mesTexto"></span>
-<button onclick="cambiarMes(1)">▶</button>
-</div>
-
-<div id="calendario3Meses" style="
-display:grid;
-grid-template-columns: repeat(3, 1fr);
-gap:15px;"></div>
-
-</div>
-
-</div>
-
 <script>
-// (TODO tu JS original sin cambios)
-</script>
 
-</body>
-</html>
+let semanaOffset = 0;
+let mesOffset = 0;
+let reservaSeleccionada = null;
+
+// --------------------- RESERVAR ---------------------
+function reservar(){
+    const data = {
+        fecha: document.getElementById("fecha").value,
+        hora_inicio: document.getElementById("inicio").value,
+        hora_fin: document.getElementById("fin").value,
+        responsable: document.getElementById("responsable").value,
+        grupo: document.getElementById("grupo").value,
+        email: document.getElementById("email").value
+    };
+
+    fetch("/reservas", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify(data)
+    })
+    .then(res => {
+        if(!res.ok) throw new Error();
+        return res.json();
+    })
+    .then(()=>{
+        alert("Reserva creada");
+        cargarReservas();
+    })
+    .catch(()=>alert("Error al guardar"));
+}
+
+// --------------------- SEMANA ---------------------
+function cambiarSemana(dir){
+    semanaOffset += dir;
+    cargarReservas();
+}
+
+// --------------------- MES ---------------------
+function cambiarMes(dir){
+    mesOffset += dir;
+    cargarReservas();
+}
+
+// --------------------- CARGAR RESERVAS ---------------------
+function cargarReservas(){
+
+fetch("/reservas")
+.then(res => res.json())
+.then(data => {
+
+    let inicioSemana = new Date();
+    inicioSemana.setHours(0,0,0,0);
+    let diaActual = inicioSemana.getDay() === 0 ? 6 : inicioSemana.getDay()-1;
+    inicioSemana.setDate(inicioSemana.getDate() - diaActual + semanaOffset*7);
+
+    let finSemana = new Date(inicioSemana);
+    finSemana.setDate(finSemana.getDate() + 4);
+
+    document.getElementById("semanaTexto").innerText =
+        inicioSemana.toISOString().split("T")[0] + " - " +
+        finSemana.toISOString().split("T")[0];
+
+    const cont = document.getElementById("calendario");
+    cont.innerHTML = "";
+
+    const dias = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
+
+    cont.appendChild(document.createElement("div"));
+
+    dias.forEach((d,i)=>{
+        let f = new Date(inicioSemana);
+        f.setDate(f.getDate()+i);
+        let div = document.createElement("div");
+        div.innerText = `${d} ${f.getDate()}/${f.getMonth()+1}`;
+        div.style.textAlign="center";
+        div.style.fontWeight="bold";
+        div.style.background="#e9ecef";
+        cont.appendChild(div);
+    });
+
+    for(let h=8; h<=18; h++){
+        let hora=document.createElement("div");
+        hora.innerText=`${h}:00`;
+        cont.appendChild(hora);
+
+        dias.forEach((d,i)=>{
+            let celda=document.createElement("div");
+            celda.style.height="40px";
+            celda.style.border="1px solid #ddd";
+
+            data.forEach(r=>{
+                let ini=parseInt(r.hora_inicio);
+                let fin=parseInt(r.hora_fin);
+
+                let f=new Date(inicioSemana);
+                f.setDate(f.getDate()+i);
+
+                let fechaStr=f.toISOString().split("T")[0];
+
+                if(r.fecha===fechaStr && ini===h){
+                    let bloque=document.createElement("div");
+                    bloque.style.background="#4dabf7";
+                    bloque.style.height=(fin-ini)*40+"px";
+                    bloque.style.color="white";
+                    bloque.innerHTML=`<b>${r.grupo}</b>`;
+                    celda.appendChild(bloque);
+                }
+            });
+
+            cont.appendChild(celda);
+        });
+    }
+
+    cargarCalendario3Meses(data);
+
+});
+}
+
+// --------------------- 3 MESES ---------------------
+function cargarCalendario3Meses(reservas){
+
+    const cont=document.getElementById("calendario3Meses");
+    cont.innerHTML="";
+
+    let base=new Date();
+    base.setDate(1);
+    base.setMonth(base.getMonth()+mesOffset);
+
+    document.getElementById("mesTexto").innerText =
+        base.toLocaleString('es-ES',{month:'long',year:'numeric'});
+
+    for(let m=0;m<3;m++){
+
+        let mes=new Date(base.getFullYear(),base.getMonth()+m,1);
+
+        let divMes=document.createElement("div");
+        divMes.style.background="white";
+        divMes.style.padding="10px";
+        divMes.style.borderRadius="10px";
+
+        let titulo=document.createElement("h4");
+        titulo.innerText=mes.toLocaleString('es-ES',{month:'long',year:'numeric'});
+        titulo.style.textAlign="center";
+
+        divMes.appendChild(titulo);
+
+        let grid=document.createElement("div");
+        grid.style.display="grid";
+        grid.style.gridTemplateColumns="repeat(7,1fr)";
+        grid.style.gap="3px";
+
+        let ultimo=new Date(mes.getFullYear(),mes.getMonth()+1,0);
+
+        for(let d=1;d<=ultimo.getDate();d++){
+
+            let fecha=new Date(mes.getFullYear(),mes.getMonth(),d);
+            let fechaStr=fecha.toISOString().split("T")[0];
+
+            let celda = document.createElement("div");
+
+            celda.style.padding = "5px";
+            celda.style.textAlign = "center";
+            celda.style.borderRadius = "5px";
+            celda.style.fontSize = "12px";
+            celda.style.cursor = "pointer";
+
+            let reservasDia = reservas.filter(r => r.fecha === fechaStr);
+
+            if(reservasDia.length > 0){
+                celda.style.background = "#ff6b6b";
+                celda.style.color = "white";
+                celda.innerHTML = `<b>${d}</b><br>${reservasDia.length}`;
+            } else {
+                celda.style.background = "#d3f9d8";
+                celda.innerHTML = `<b>${d}</b>`;
+            }
+
+            celda.addEventListener("click", () => {
+                document.getElementById("fecha").value = fechaStr;
+                document.getElementById("inicio").value = "08:00";
+                document.getElementById("fin").value = "10:00";
+
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            });
+
+            grid.appendChild(celda);
+        }
+
+        divMes.appendChild(grid);
+        cont.appendChild(divMes);
+    }
+}
+
+window.onload = cargarReservas;
+
+</script>
