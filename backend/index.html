@@ -276,23 +276,44 @@ function cargarCalendario3Meses(reservas){
             let fecha=new Date(mes.getFullYear(),mes.getMonth(),d);
             let fechaStr=fecha.toISOString().split("T")[0];
 
-            let celda=document.createElement("div");
-            celda.style.padding="5px";
-            celda.style.textAlign="center";
-            celda.style.borderRadius="5px";
-            celda.style.fontSize="12px";
+            let celda = document.createElement("div");
 
-            let reservasDia=reservas.filter(r=>r.fecha===fechaStr);
+            celda.style.padding = "5px";
+            celda.style.textAlign = "center";
+            celda.style.borderRadius = "5px";
+            celda.style.fontSize = "12px";
+            celda.style.cursor = "pointer";
 
-            if(reservasDia.length>0){
-                celda.style.background="#ff6b6b";
-                celda.style.color="white";
-                celda.innerHTML=`<b>${d}</b><br>${reservasDia.length}`;
+            let reservasDia = reservas.filter(r => r.fecha === fechaStr);
+
+            if(reservasDia.length > 0){
+                celda.style.background = "#ff6b6b";
+                celda.style.color = "white";
+                celda.innerHTML = `<b>${d}</b><br>${reservasDia.length}`;
             } else {
-                celda.style.background="#d3f9d8";
-                celda.innerHTML=`<b>${d}</b>`;
+                celda.style.background = "#d3f9d8";
+                celda.innerHTML = `<b>${d}</b>`;
             }
 
+            // NUEVA FUNCIONALIDAD
+            celda.addEventListener("click", () => {
+
+                // Setear fecha
+                document.getElementById("fecha").value = fechaStr;
+
+                // Sugerencia automática de horario
+                document.getElementById("inicio").value = "08:00";
+                document.getElementById("fin").value = "10:00";
+
+                // Scroll hacia el formulario (UX PRO)
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                });
+
+            });
+
+            
             grid.appendChild(celda);
         }
 
