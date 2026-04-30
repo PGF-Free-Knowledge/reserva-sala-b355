@@ -352,6 +352,18 @@ function cargarCalendario3Meses(reservas){
             celda.style.background="#eee";
             celda.style.padding="5px";
             grid.appendChild(celda);
+
+            // Forzar salto de fila cada 5 columnas (L-V)
+            let totalCeldas = grid.children.length;
+
+            // restar encabezado (5 celdas)
+            let celdasSinHeader = totalCeldas - 5;
+
+            if(celdasSinHeader % 5 === 0){
+            let salto = document.createElement("div");
+            salto.style.gridColumn = "span 5";
+            grid.appendChild(salto);
+            }
         });
 
         grid.style.display="grid";
