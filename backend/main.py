@@ -65,7 +65,7 @@ def crear_reserva(reserva: dict, db: Session = Depends(get_db)):
 
     # Validación email
     if not reserva.get("email", "").endswith("@usm.cl"):
-        raise HTTPException(status_code=400, detail="Email inválido")
+        return {"mensaje": "Email inválido"}
 
     # Parseo
     fecha = datetime.strptime(reserva["fecha"], "%Y-%m-%d").date()
@@ -74,19 +74,19 @@ def crear_reserva(reserva: dict, db: Session = Depends(get_db)):
 
     # Validaciones
     if fecha < datetime.today().date():
-        raise HTTPException(status_code=400, detail="Fecha pasada no permitida")
+        return {"mensaje": "Fecha pasada no permitida"}
 
     if fecha.weekday() >= 5:
-        raise HTTPException(status_code=400, detail="Solo lunes a viernes")
+        return {"mensaje": "Solo lunes a viernes"}
 
     if hora_inicio < time(8, 0) or hora_fin > time(18, 0):
-        raise HTTPException(status_code=400, detail="Horario 08:00 - 18:00")
+        return {"mensaje": "Horario 08:00 - 18:00"}
 
     if hora_inicio.minute != 0 or hora_fin.minute != 0:
-        raise HTTPException(status_code=400, detail="Horas exactas")
+        return {"mensaje": "Horas exactas"}
 
     if hora_inicio.hour % 2 != 0 or hora_fin.hour % 2 != 0:
-        raise HTTPException(status_code=400, detail="Horas pares")
+        return {"mensaje": "Horas pares"}
 
     duracion = (
         datetime.combine(fecha, hora_fin)
@@ -94,7 +94,7 @@ def crear_reserva(reserva: dict, db: Session = Depends(get_db)):
     ).seconds / 3600
 
     if duracion < 2:
-        raise HTTPException(status_code=400, detail="Mínimo 2 horas")
+        return {"mensaje": "Mínimo 2 horas"}
 
     reservas_grupo = db.query(Reserva).filter(
         Reserva.grupo == reserva["grupo"],
@@ -110,7 +110,7 @@ def crear_reserva(reserva: dict, db: Session = Depends(get_db)):
     )
 
     if horas_existentes + duracion > 4:
-        raise HTTPException(status_code=400, detail="Máximo 4 horas por grupo")
+        return {"mensaje": "Máximo 4 horas por grupo"}
 
     # Guardar en DB REAL (PostgreSQL)
     nueva = Reserva(**reserva)
