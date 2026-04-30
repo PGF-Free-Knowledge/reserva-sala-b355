@@ -112,25 +112,6 @@ def crear_reserva(reserva: dict, db: Session = Depends(get_db)):
     if horas_existentes + duracion > 4:
         return {"mensaje": "Máximo 4 horas por grupo"}
 
-    # 🔒 VALIDAR CRUCE DE HORARIOS (NUEVO)
-    reservas_existentes = db.query(Reserva).filter(
-        Reserva.fecha == reserva["fecha"]
-    ).all()
-
-    for r in reservas_existentes:
-
-        inicio_existente = datetime.combine(fecha, r.hora_inicio)
-        fin_existente = datetime.combine(fecha, r.hora_fin)
-
-        inicio_nuevo = datetime.combine(fecha, hora_inicio)
-        fin_nuevo = datetime.combine(fecha, hora_fin)
-
-    # Detectar solapamiento
-    if inicio_nuevo < fin_existente and fin_nuevo > inicio_existente:
-        return {"mensaje": "Bloque horario ya reservado"}
-    
-    
-    
     
     # Guardar en DB REAL (PostgreSQL)
     nueva = Reserva(**reserva)
