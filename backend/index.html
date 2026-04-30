@@ -372,66 +372,56 @@ function cargarCalendario3Meses(reservas){
 
         let ultimo=new Date(mes.getFullYear(),mes.getMonth()+1,0);
 
-        for(let d=1;d<=ultimo.getDate();d++){
+        let fecha = new Date(mes.getFullYear(), mes.getMonth(), 1);
 
-            let fecha=new Date(mes.getFullYear(),mes.getMonth(),d);
+        let ultimo = new Date(mes.getFullYear(), mes.getMonth()+1, 0);
+
+        while(fecha <= ultimo){
 
             let diaSemana = fecha.getDay();
 
-            // ❌ Saltar sábado (6) y domingo (0)
-            if(diaSemana === 0 || diaSemana === 6){
-                continue;
-            }
+            // Convertir a formato lunes=0
+            diaSemana = diaSemana === 0 ? 6 : diaSemana - 1;
 
-            let yyyy = fecha.getFullYear();
-            let mm = String(fecha.getMonth()+1).padStart(2,"0");
-            let dd = String(fecha.getDate()).padStart(2,"0");
+            // Solo lunes a viernes
+            if(diaSemana <= 4){
 
-            let fechaStr = `${yyyy}-${mm}-${dd}`;
-            let celda=document.createElement("div");
-            celda.style.padding="5px";
-            celda.style.textAlign="center";
-            celda.style.borderRadius="5px";
-            celda.style.cursor="pointer";
+                let yyyy = fecha.getFullYear();
+                let mm = String(fecha.getMonth()+1).padStart(2,"0");
+                let dd = String(fecha.getDate()).padStart(2,"0");
 
-            let reservasDia=reservas.filter(r=>r.fecha===fechaStr);
+                let fechaStr = `${yyyy}-${mm}-${dd}`;
 
-            if(reservasDia.length>0){
-                celda.style.background="#ff6b6b";
-                celda.style.color="white";
-                celda.innerHTML=`<b>${d}</b><br>${reservasDia.length}`;
-            } else {
-                celda.style.background="#d3f9d8";
-                celda.innerHTML=`<b>${d}</b>`;
-            }
+                let celda = document.createElement("div");
+                celda.style.padding="5px";
+                celda.style.textAlign="center";
+                celda.style.borderRadius="5px";
+                celda.style.cursor="pointer";
 
-            // 🔥 AUTOCOMPLETAR
-            celda.onclick=()=>{
+                let reservasDia = reservas.filter(r=>r.fecha===fechaStr);
 
-                let reservasDia = reservas.filter(r => r.fecha === fechaStr);
-
-                if(reservasDia.length > 0){
-
-                    let texto = "Reservas:\n";
-
-                        reservasDia.forEach(r=>{
-                            texto += `${r.hora_inicio} - ${r.hora_fin} | Grupo: ${r.grupo}\n`;
-                        });
-
-                        alert(texto);
-
+                if(reservasDia.length>0){
+                    celda.style.background="#ff6b6b";
+                    celda.style.color="white";
+                    celda.innerHTML=`<b>${dd}</b><br>${reservasDia.length}`;
+                } else {
+                    celda.style.background="#d3f9d8";
+                    celda.innerHTML=`<b>${dd}</b>`;
                 }
 
-                document.getElementById("fecha").value = fechaStr;
-                document.getElementById("inicio").value = "08:00";
-                document.getElementById("fin").value = "10:00";
-
-                window.scrollTo({top:0,behavior:"smooth"});
-            };
+                celda.onclick=()=>{
+                    document.getElementById("fecha").value = fechaStr;
+                    document.getElementById("inicio").value = "08:00";
+                    document.getElementById("fin").value = "10:00";
+                    window.scrollTo({top:0,behavior:"smooth"});
+                };
 
             grid.appendChild(celda);
         }
 
+        // avanzar 1 día siempre
+        fecha.setDate(fecha.getDate() + 1);
+    }
         div.appendChild(grid);
         cont.appendChild(div);
     }
