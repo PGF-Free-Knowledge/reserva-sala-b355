@@ -328,20 +328,11 @@ function cargarCalendario3Meses(reservas){
 
         let grid=document.createElement("div");
 
-        let primerDia = new Date(mes.getFullYear(), mes.getMonth(), 1).getDay();
+        grid.style.display="grid";
+        grid.style.gridTemplateColumns="repeat(5,1fr)";
+        grid.style.gap="3px";
 
-        // Convertir domingo (0) a 6 para lógica lunes=0
-        primerDia = primerDia === 0 ? 6 : primerDia - 1;
-
-        // Solo contar lunes a viernes (0 a 4)
-        if(primerDia > 4) primerDia = 4;
-
-        // Crear espacios vacíos antes del día 1
-        for(let i = 0; i < primerDia; i++){
-            let vacio = document.createElement("div");
-            grid.appendChild(vacio);
-        }
-
+        // -------- HEADER L M M J V --------
         const diasSemana = ["L", "M", "M", "J", "V"];
 
         diasSemana.forEach(d=>{
@@ -352,38 +343,29 @@ function cargarCalendario3Meses(reservas){
             celda.style.background="#eee";
             celda.style.padding="5px";
             grid.appendChild(celda);
-
-            // Forzar salto de fila cada 5 columnas (L-V)
-            let totalCeldas = grid.children.length;
-
-            // restar encabezado (5 celdas)
-            let celdasSinHeader = totalCeldas - 5;
-
-            if(celdasSinHeader % 5 === 0){
-            let salto = document.createElement("div");
-            salto.style.gridColumn = "span 5";
-            grid.appendChild(salto);
-            }
         });
 
-        grid.style.display="grid";
-        grid.style.gridTemplateColumns="repeat(5,1fr)";
-        grid.style.gap="3px";
+        // -------- OFFSET DEL MES --------
+        let primerDia = new Date(mes.getFullYear(), mes.getMonth(), 1).getDay();
+        primerDia = primerDia === 0 ? 6 : primerDia - 1;
 
-        let ultimo=new Date(mes.getFullYear(),mes.getMonth()+1,0);
+        // solo lunes a viernes
+        if(primerDia > 4) primerDia = 4;
 
+        for(let i = 0; i < primerDia; i++){
+            let vacio = document.createElement("div");
+            grid.appendChild(vacio);
+        }
+
+        // -------- DÍAS DEL MES --------
         let fecha = new Date(mes.getFullYear(), mes.getMonth(), 1);
-
         let ultimo = new Date(mes.getFullYear(), mes.getMonth()+1, 0);
 
         while(fecha <= ultimo){
 
             let diaSemana = fecha.getDay();
-
-            // Convertir a formato lunes=0
             diaSemana = diaSemana === 0 ? 6 : diaSemana - 1;
 
-            // Solo lunes a viernes
             if(diaSemana <= 4){
 
                 let yyyy = fecha.getFullYear();
@@ -413,15 +395,14 @@ function cargarCalendario3Meses(reservas){
                     document.getElementById("fecha").value = fechaStr;
                     document.getElementById("inicio").value = "08:00";
                     document.getElementById("fin").value = "10:00";
-                    window.scrollTo({top:0,behavior:"smooth"});
+                   window.scrollTo({top:0,behavior:"smooth"});
                 };
 
-            grid.appendChild(celda);
-        }
+                grid.appendChild(celda);
+            }
 
-        // avanzar 1 día siempre
-        fecha.setDate(fecha.getDate() + 1);
-    }
+            fecha.setDate(fecha.getDate() + 1);
+        }
         div.appendChild(grid);
         cont.appendChild(div);
     }
