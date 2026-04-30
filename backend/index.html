@@ -249,16 +249,19 @@ fetch("/reservas")
             celda.style.border="1px solid #ddd";
 
             data.forEach(r=>{
-                let ini=parseInt(r.hora_inicio);
+                let ini = parseInt(r.hora_inicio);
+                let fin = parseInt(r.hora_fin);
 
-                let f=new Date(inicioSemana);
+                let f = new Date(inicioSemana);
                 f.setDate(f.getDate()+i);
 
-                let fechaStr=f.toISOString().split("T")[0];
+                let fechaStr = f.getFullYear() + "-" +
+             String(f.getMonth()+1).padStart(2,"0") + "-" +
+               String(f.getDate()).padStart(2,"0");
 
-                if(r.fecha===fechaStr && ini===h){
-                    celda.style.background="#4dabf7";
-                    celda.innerText=r.grupo;
+                if(r.fecha === fechaStr && h >= ini && h < fin){
+                    celda.style.background = "#4dabf7";
+                    celda.innerText = r.grupo;
                 }
             });
 
