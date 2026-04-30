@@ -354,9 +354,9 @@ function cargarCalendario3Meses(reservas){
 
             // 🔥 AUTOCOMPLETAR
             celda.onclick=()=>{
-                fecha.value=fechaStr;
-                inicio.value="08:00";
-                fin.value="10:00";
+                document.getElementById("fecha").value = fechaStr;
+                document.getElementById("inicio").value = "08:00";
+                document.getElementById("fin").value = "10:00";
                 window.scrollTo({top:0,behavior:"smooth"});
             };
 
