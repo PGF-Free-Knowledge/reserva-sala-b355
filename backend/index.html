@@ -281,6 +281,9 @@ fetch("/reservas")
                 if(r.fecha === fechaStr && h >= ini && h < fin){
                     celda.style.background = "#4dabf7";
                     celda.innerText = r.grupo;
+
+                    celda.style.cursor = "not-allowed";
+                    celda.onclick = null;
                 }
             });
 
