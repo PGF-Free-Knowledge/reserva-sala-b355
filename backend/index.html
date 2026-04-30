@@ -328,6 +328,20 @@ function cargarCalendario3Meses(reservas){
 
         let grid=document.createElement("div");
 
+        let primerDia = new Date(mes.getFullYear(), mes.getMonth(), 1).getDay();
+
+        // Convertir domingo (0) a 6 para lógica lunes=0
+        primerDia = primerDia === 0 ? 6 : primerDia - 1;
+
+        // Solo contar lunes a viernes (0 a 4)
+        if(primerDia > 4) primerDia = 4;
+
+        // Crear espacios vacíos antes del día 1
+        for(let i = 0; i < primerDia; i++){
+            let vacio = document.createElement("div");
+            grid.appendChild(vacio);
+        }
+
         const diasSemana = ["L", "M", "M", "J", "V"];
 
         diasSemana.forEach(d=>{
