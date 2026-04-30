@@ -327,8 +327,21 @@ function cargarCalendario3Meses(reservas){
         div.appendChild(titulo);
 
         let grid=document.createElement("div");
+
+        const diasSemana = ["L", "M", "M", "J", "V"];
+
+        diasSemana.forEach(d=>{
+            let celda=document.createElement("div");
+            celda.innerText=d;
+            celda.style.textAlign="center";
+            celda.style.fontWeight="bold";
+            celda.style.background="#eee";
+            celda.style.padding="5px";
+            grid.appendChild(celda);
+        });
+
         grid.style.display="grid";
-        grid.style.gridTemplateColumns="repeat(7,1fr)";
+        grid.style.gridTemplateColumns="repeat(5,1fr)";
         grid.style.gap="3px";
 
         let ultimo=new Date(mes.getFullYear(),mes.getMonth()+1,0);
@@ -336,8 +349,19 @@ function cargarCalendario3Meses(reservas){
         for(let d=1;d<=ultimo.getDate();d++){
 
             let fecha=new Date(mes.getFullYear(),mes.getMonth(),d);
-            let fechaStr=fecha.toISOString().split("T")[0];
 
+            let diaSemana = fecha.getDay();
+
+            // ❌ Saltar sábado (6) y domingo (0)
+            if(diaSemana === 0 || diaSemana === 6){
+                continue;
+            }
+
+            let yyyy = fecha.getFullYear();
+            let mm = String(fecha.getMonth()+1).padStart(2,"0");
+            let dd = String(fecha.getDate()).padStart(2,"0");
+
+            let fechaStr = `${yyyy}-${mm}-${dd}`;
             let celda=document.createElement("div");
             celda.style.padding="5px";
             celda.style.textAlign="center";
