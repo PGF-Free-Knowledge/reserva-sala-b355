@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Reserva Sala B355</title>
-<link rel="icon" href="data:,">//Elimina error 404
-
+<link rel="icon" href="data:,">
 <style>
 body { margin:0; font-family:Arial; display:flex; }
 
@@ -248,6 +247,25 @@ fetch("/reservas")
 
             let celda=document.createElement("div");
             celda.style.border="1px solid #ddd";
+
+            celda.onclick=()=>{
+
+                let fecha = new Date(inicioSemana);
+                fecha.setDate(fecha.getDate() + i);
+
+                if(fecha.getDay() === 0 || fecha.getDay() === 6){
+                    alert("Solo lunes a viernes");
+                    return;
+                }
+
+                let yyyy = fecha.getFullYear();
+                let mm = String(fecha.getMonth()+1).padStart(2,'0');
+                let dd = String(fecha.getDate()).padStart(2,'0');
+
+                document.getElementById("fecha").value = `${yyyy}-${mm}-${dd}`;
+                document.getElementById("inicio").value = `${String(h).padStart(2,"0")}:00`;
+                document.getElementById("fin").value = `${String(h+2).padStart(2,"0")}:00`;
+            };
 
             data.forEach(r=>{
                 let ini = parseInt(r.hora_inicio);
