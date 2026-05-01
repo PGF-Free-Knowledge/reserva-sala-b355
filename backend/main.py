@@ -113,10 +113,10 @@ def crear_reserva(reserva: dict, db: Session = Depends(get_db)):
         return {"mensaje": "Máximo 4 horas por grupo"}
     
 
-    # 🔍 DETECTAR SOLAPAMIENTO (SIN BLOQUEAR)
+    # 🔒 VALIDAR SOLAPAMIENTO (VERSIÓN SEGURA)
     reservas_existentes = db.query(Reserva).filter(
         Reserva.fecha == reserva["fecha"]
-        ).all()
+    ).all()
 
     for r in reservas_existentes:
 
@@ -126,9 +126,9 @@ def crear_reserva(reserva: dict, db: Session = Depends(get_db)):
         inicio_nuevo = reserva["hora_inicio"]
         fin_nuevo = reserva["hora_fin"]
 
-        print("DEBUG:", inicio_existente, fin_existente, "|", inicio_nuevo, fin_nuevo)
-
-
+        # comparar como strings (seguro en formato HH:MM)
+        if inicio_nuevo < fin_existente and fin_nuevo > inicio_existente:
+            return {"mensaje": "Bloque horario ya reservado"}
     
     # Guardar en DB REAL (PostgreSQL)
     nueva = Reserva(**reserva)
