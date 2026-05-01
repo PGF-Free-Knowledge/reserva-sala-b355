@@ -178,7 +178,15 @@ function reservar(){
         headers:{"Content-Type":"application/json"},
         body: JSON.stringify(data)
     })
-    .then(()=>cargarReservas());
+    .then(res => res.json())
+    .then(resp => {
+
+        if(resp.mensaje){
+            alert(resp.mensaje);
+        }
+
+        cargarReservas();
+    });
 }
 
 // -------- SEMANA --------
