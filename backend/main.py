@@ -111,6 +111,23 @@ def crear_reserva(reserva: dict, db: Session = Depends(get_db)):
 
     if horas_existentes + duracion > 4:
         return {"mensaje": "Máximo 4 horas por grupo"}
+    
+
+    # 🔍 DETECTAR SOLAPAMIENTO (SIN BLOQUEAR)
+    reservas_existentes = db.query(Reserva).filter(
+        Reserva.fecha == reserva["fecha"]
+        ).all()
+
+    for r in reservas_existentes:
+
+        inicio_existente = r.hora_inicio
+        fin_existente = r.hora_fin
+
+        inicio_nuevo = reserva["hora_inicio"]
+        fin_nuevo = reserva["hora_fin"]
+
+        print("DEBUG:", inicio_existente, fin_existente, "|", inicio_nuevo, fin_nuevo)
+
 
     
     # Guardar en DB REAL (PostgreSQL)
