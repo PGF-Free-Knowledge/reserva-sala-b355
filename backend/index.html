@@ -45,29 +45,6 @@ label { font-weight:bold; }
 <body>
 
 
-
-<div id="loadingScreen" style="
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:white;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-z-index:9999;
-">
-
-    <img src="logo_usm.png" style="width:120px; margin-bottom:20px;">
-    
-    <h2>Cargando sistema...</h2>
-    <p>Por favor espera unos segundos</p>
-
-</div>
-
-<div class="sidebar">
 <div class="sidebar" style="text-align:center;">
     <img src="logo_usm.png" style="width:140px;">
     <img src="logo_electronica.png" style="width:120px;">
@@ -440,14 +417,7 @@ function cargarCalendario3Meses(reservas){
     }
 }
 
-window.onload = () => {
-    cargarReservas();
-
-    const loading = document.getElementById("loadingScreen");
-    if(loading){
-        loading.style.display = "none";
-    }
-};
+window.onload=cargarReservas;
 
 </script>
 
