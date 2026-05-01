@@ -52,6 +52,17 @@ label { font-weight:bold; }
 </div>
 
 <div class="main">
+<div id="statusConexion" style="
+background:#fff3cd;
+color:#856404;
+padding:8px;
+border-radius:5px;
+margin-bottom:10px;
+display:none;
+font-size:14px;
+">
+Conectando con el servidor...
+</div>
 
 <h1>Reserva Sala B355</h1>
 
@@ -205,9 +216,14 @@ function cambiarMes(dir){
 // -------- CARGAR --------
 function cargarReservas(){
 
+const status = document.getElementById("statusConexion");
+if(status) status.style.display = "block";
+
 fetch("/reservas")
 .then(res => res.json())
 .then(data => {
+
+    if(status) status.style.display = "none";
 
     let inicioSemana = new Date();
     inicioSemana.setHours(0,0,0,0);
@@ -300,8 +316,15 @@ fetch("/reservas")
         });
     }
 
-    cargarCalendario3Meses(data);
+cargarCalendario3Meses(data);
 
+})
+.catch(() => {
+    const status = document.getElementById("statusConexion");
+    if(status){
+        status.innerText = "Despertando servidor...";
+        setTimeout(cargarReservas, 3000);
+    }
 });
 }
 
