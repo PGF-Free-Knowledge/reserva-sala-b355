@@ -217,13 +217,22 @@ function cambiarMes(dir){
 function cargarReservas(){
 
 const status = document.getElementById("statusConexion");
-if(status) status.style.display = "block";
+let timeout = setTimeout(() => {
+    if(status){
+        status.style.display = "block";
+        status.innerText = "Despertando servidor...";
+    }
+}, 1000);
 
 fetch("/reservas")
 .then(res => res.json())
 .then(data => {
 
-    if(status) status.style.display = "none";
+    clearTimeout(timeout);
+
+    if(status){
+        status.style.display = "none";
+    }
 
     let inicioSemana = new Date();
     inicioSemana.setHours(0,0,0,0);
@@ -322,6 +331,7 @@ cargarCalendario3Meses(data);
 .catch(() => {
     const status = document.getElementById("statusConexion");
     if(status){
+        status.style.display = "block";  // 👈 ESTA FALTABA
         status.innerText = "Despertando servidor...";
         setTimeout(cargarReservas, 3000);
     }
