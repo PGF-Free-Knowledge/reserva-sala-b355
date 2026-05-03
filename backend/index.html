@@ -25,7 +25,7 @@ body { margin:0; font-family:Arial; display:flex; }
     gap:20px;
 }
 
-/* 🔥 NUEVAS PROPORCIONES */
+/*  NUEVAS PROPORCIONES */
 .calendario { flex:2.2; }
 .formulario { flex:1; max-width:300px; }
 .info { flex:1.2; max-width:350px; }
@@ -38,6 +38,8 @@ body { margin:0; font-family:Arial; display:flex; }
 }
 
 label { font-weight:bold; }
+
+
 
 .link {
     display:block;
@@ -53,12 +55,34 @@ label { font-weight:bold; }
     background:#1c3b6b;
 }
 
+.ticker {
+    position:fixed;
+    bottom:0;
+    width:100%;
+    background:#0b1e3c;
+    color:white;
+    overflow:hidden;
+    height:35px;
+    display:flex;
+    align-items:center;
+    z-index:999;
+}
+
+.ticker-text {
+    white-space:nowrap;
+    display:inline-block;
+    padding-left:100%;
+    animation:tickerMove 20s linear infinite;
+}
+
+@keyframes tickerMove {
+    0% { transform:translateX(0); }
+    100% { transform:translateX(-100%); }
+}
 </style>
 </head>
 
 <body>
-
-
 
 <div class="sidebar" style="text-align:center;">
     <img src="logo_usm.png" style="width:140px;">
@@ -102,7 +126,7 @@ Conectando con el servidor...
 
 <div class="container">
 
-<!-- 🔵 CALENDARIO -->
+<!-- CALENDARIO -->
 <div class="card calendario">
 
 <h3>Calendario semanal</h3>
@@ -119,7 +143,7 @@ style="display:grid; grid-template-columns:80px repeat(5,1fr); gap:2px;">
 
 </div>
 
-<!-- 🟢 FORMULARIO (MÁS COMPACTO) -->
+<!-- FORMULARIO (MÁS COMPACTO) -->
 <div class="card formulario">
 
 <h3>Nueva Reserva</h3>
@@ -146,7 +170,7 @@ style="display:grid; grid-template-columns:80px repeat(5,1fr); gap:2px;">
 
 </div>
 
-<!-- 🟣 INFO (MÁS ANCHA Y LEGIBLE) -->
+<!-- INFO (MÁS ANCHA Y LEGIBLE) -->
 <div class="card info">
 
 <h3>Información</h3>
@@ -186,7 +210,7 @@ permitiendo planificación y avance colaborativo.
 
 </div>
 
-<!-- 🔶 CALENDARIO 3 MESES -->
+<!--  CALENDARIO 3 MESES -->
 <div class="card" style="margin-top:20px;">
 
 <h3>Vista general (3 meses)</h3>
@@ -367,7 +391,7 @@ cargarCalendario3Meses(data);
 .catch(() => {
     const status = document.getElementById("statusConexion");
     if(status){
-        status.style.display = "block";  // 👈 ESTA FALTABA
+        status.style.display = "block";  //  ESTA FALTABA
         status.innerText = "Despertando servidor...";
         setTimeout(cargarReservas, 3000);
     }
@@ -489,7 +513,11 @@ function cargarCalendario3Meses(reservas){
 window.onload=cargarReservas;
 
 </script>
-
+<div class="ticker">
+    <div class="ticker-text">
+        Reserva Sala B355 disponible de lunes a viernes 08:00–18:00 | Máximo 4 horas por grupo | Coordinador: Paul Gálvez
+    </div>
+</div>
 </body>
 </html>
 
