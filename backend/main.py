@@ -96,8 +96,9 @@ def crear_reserva(reserva: dict, db: Session = Depends(get_db)):
     if duracion < 2:
         return {"mensaje": "Mínimo 2 horas"}
 
-    reservas_grupo = db.query(Reserva).filter(
-        Reserva.grupo == reserva["grupo"],
+    # VALIDAR MÁXIMO 4 HORAS POR USUARIO
+    reservas_usuario = db.query(Reserva).filter(
+        Reserva.email == reserva["email"],
         Reserva.fecha == reserva["fecha"]
     ).all()
 
@@ -106,11 +107,11 @@ def crear_reserva(reserva: dict, db: Session = Depends(get_db)):
             datetime.combine(fecha, r.hora_fin)
             - datetime.combine(fecha, r.hora_inicio)
         ).seconds / 3600
-        for r in reservas_grupo
+        for r in reservas_usuario
     )
 
     if horas_existentes + duracion > 4:
-        return {"mensaje": "Máximo 4 horas por grupo"}
+        return {"mensaje": "Máximo 4 horas por usuario por día"}
     
 
     # 🔒 VALIDAR SOLAPAMIENTO (VERSIÓN SEGURA)
